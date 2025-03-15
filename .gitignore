@@ -1,1 +1,49 @@
+# Virtual environment
+venv/
 env/
+*.venv
+.env/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django settings and environment files
+.env
+*.env
+config/settings/local.py  # If you have a separate local settings file
+
+# Database and migrations
+db.sqlite3
+*.sqlite3
+*.db
+
+# Logs and debug files
+logs/
+*.log
+*.out
+*.err
+debug.log
+
+# Static and media files (if generated dynamically)
+staticfiles/
+media/
+*.sass-cache
+node_modules/
+
+# Compiled and temporary files
+*.swp
+*.swo
+.DS_Store
+*.bak
+*.~ 
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.iml
+
+# Git and deployment
+.git/
