@@ -1,0 +1,149 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="course-header">
+    <div class="course-header-content">
+        <h1 class="course-header-title">{{ course.title }}</h1>
+        <p class="course-header-instructor">Instructor: {{ course.instructor }}</p>
+        
+        <div class="course-header-meta">
+            <span class="course-header-level">{{ course.get_level_display }}</span>
+            <span class="course-header-duration">{{ course.duration }}</span>
+        </div>
+    </div>
+    <div class="course-header-image">
+        <img src="{{ course.image }}" alt="{{ course.title }}">
+    </div>
+</div>
+
+<div class="course-container">
+    <div class="course-main">
+        <div class="course-description-section">
+            <h2 class="section-title">About This Course</h2>
+            <div class="course-description">
+                {{ course.description }}
+            </div>
+        </div>
+        
+        {% if is_enrolled %}
+            <div class="course-progress-section">
+                <h2 class="section-title">Your Progress</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ progress_width }}"></div>
+                </div>
+                <p class="progress-text">{{ progress_percentage|floatformat:0 }}% Complete</p>
+            </div>
+        {% endif %}
+        
+        <div class="course-content-section">
+            <h2 class="section-title">Course Content</h2>
+            
+            {% if modules %}
+                <div class="course-modules">
+                    {% for module in modules %}
+                        <div class="module-card">
+                            <div class="module-header" onclick="toggleModule({{ module.id }})">
+                                <h3 class="module-title">{{ module.title }}</h3>
+                                <span class="module-toggle">+</span>
+                            </div>
+                            <div class="module-content" id="module-{{ module.id }}">
+                                {% if module.description %}
+                                    <p class="module-description">{{ module.description }}</p>
+                                {% endif %}
+                                
+                                <ul class="lesson-list">
+                                    {% for lesson in module.lessons.all %}
+                                        <li class="lesson-item">
+                                            {% if is_enrolled %}
+                                                <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=lesson.id %}" class="lesson-link">
+                                                    {{ lesson.title }}
+                                                </a>
+                                            {% else %}
+                                                <span class="lesson-title">{{ lesson.title }}</span>
+                                            {% endif %}
+                                        </li>
+                                    {% empty %}
+                                        <li class="no-lessons">No lessons available in this module.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-modules">No content available for this course yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="course-sidebar">
+        <div class="enrollment-card">
+            {% if is_enrolled %}
+                <div class="enrolled-status">
+                    <span class="enrolled-icon">✓</span>
+                    <span class="enrolled-text">You are enrolled</span>
+                </div>
+                
+                {% if modules and modules.0.lessons.all %}
+                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=modules.0.lessons.all.0.id %}" class="start-course-button">
+                        {% if progress_percentage > 0 %}Continue Course{% else %}Start Course{% endif %}
+                    </a>
+                {% endif %}
+            {% else %}
+                <form method="post" action="{% url 'enroll_course' course_slug=course.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="enroll-button">Enroll Now</button>
+                </form>
+            {% endif %}
+        </div>
+        
+        <div class="course-info-card">
+            <h3 class="card-title">Course Information</h3>
+            <ul class="info-list">
+                <li class="info-item">
+                    <span class="info-label">Level:</span>
+                    <span class="info-value">{{ course.get_level_display }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Duration:</span>
+                    <span class="info-value">{{ course.duration }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Instructor:</span>
+                    <span class="info-value">{{ course.instructor }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function toggleModule(moduleId) {
+        const moduleContent = document.getElementById(`module-${moduleId}`);
+        const moduleToggle = moduleContent.previousElementSibling.querySelector('.module-toggle');
+        
+        if (moduleContent.style.display === 'block') {
+            moduleContent.style.display = 'none';
+            moduleToggle.textContent = '+';
+        } else {
+            moduleContent.style.display = 'block';
+            moduleToggle.textContent = '−';
+        }
+    }
+    
+    // Open the first module by default
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstModule = document.querySelector('.module-card');
+        if (firstModule) {
+            const moduleId = firstModule.querySelector('.module-content').id.replace('module-', '');
+            toggleModule(moduleId);
+        }
+    });
+</script>
+{% endblock %}
+

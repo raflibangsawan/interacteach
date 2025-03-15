@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ lesson.title }} | {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="lesson-container">
+    <div class="lesson-sidebar">
+        <div class="course-info">
+            <h3 class="course-title">{{ course.title }}</h3>
+            <a href="{% url 'course_detail' course_slug=course.slug %}" class="back-to-course">Back to course</a>
+        </div>
+        
+        <div class="module-lessons">
+            <h4 class="module-title">{{ module.title }}</h4>
+            <ul class="lesson-list">
+                {% for lesson_item in module.lessons.all %}
+                    <li class="lesson-item {% if lesson_item.id == lesson.id %}active{% endif %}">
+                        <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=lesson_item.id %}" class="lesson-link">
+                            {{ lesson_item.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="lesson-main">
+        <div class="lesson-header">
+            <h1 class="lesson-title">{{ lesson.title }}</h1>
+        </div>
+        
+        {% if lesson.video_url %}
+            <div class="lesson-video">
+                <iframe src="{{ lesson.video_url }}" frameborder="0" allowfullscreen></iframe>
+            </div>
+        {% endif %}
+        
+        <div class="lesson-content">
+            {{ lesson.content|linebreaks }}
+        </div>
+        
+        <div class="lesson-actions">
+            <div class="lesson-navigation">
+                {% if prev_lesson %}
+                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=prev_lesson.id %}" class="prev-lesson">
+                        <span class="nav-arrow">←</span> Previous Lesson
+                    </a>
+                {% endif %}
+                
+                {% if next_lesson %}
+                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=next_lesson.id %}" class="next-lesson">
+                        Next Lesson <span class="nav-arrow">→</span>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <form method="post" class="completion-form">
+                {% csrf_token %}
+                <input type="hidden" name="mark_completed" value="1">
+                <button type="submit" class="complete-button {% if is_completed %}completed{% endif %}" {% if is_completed %}disabled{% endif %}>
+                    {% if is_completed %}Completed{% else %}Mark as Completed{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

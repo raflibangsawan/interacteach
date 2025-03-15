@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+
+{% block title %}All Courses{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1 class="page-title">All Courses</h1>
+    <p class="page-subtitle">Browse our complete catalog of courses</p>
+</section>
+
+<section class="filter-section">
+    <form method="get" class="filter-form">
+        <div class="search-box">
+            <input type="text" name="search" placeholder="Search courses..." value="{{ search_query }}" class="search-input">
+            <button type="submit" class="search-button">Search</button>
+        </div>
+        
+        <div class="filter-options">
+            <div class="filter-group">
+                <label for="level-filter" class="filter-label">Level:</label>
+                <select name="level" id="level-filter" class="filter-select" onchange="this.form.submit()">
+                    <option value="">All Levels</option>
+                    {% for level_value, level_name in level_choices %}
+                        <option value="{{ level_value }}" {% if level_filter == level_value %}selected{% endif %}>
+                            {{ level_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="courses-section">
+    <div class="courses-grid">
+        {% for course in courses %}
+        <div class="course-card">
+            <div class="course-image">
+                <img src="{{ course.image }}" alt="{{ course.title }}">
+                <div class="course-level">{{ course.get_level_display }}</div>
+            </div>
+            <div class="course-content">
+                <h3 class="course-title">{{ course.title }}</h3>
+                <p class="course-instructor">{{ course.instructor }}</p>
+                <div class="course-meta">
+                    <span class="course-duration">{{ course.duration }}</span>
+                    <span class="course-level-badge">{{ course.get_level_display }}</span>
+                </div>
+                <p class="course-description">{{ course.description }}</p>
+                <a href="{% url 'course_detail' course_slug=course.slug %}" class="course-button">View Course</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-courses">
+            <p>No courses found matching your criteria.</p>
+            <a href="{% url 'course_list' %}" class="text-link">Clear filters</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
