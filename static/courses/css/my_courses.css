@@ -1,0 +1,41 @@
+/* My Courses Page Styles */
+.course-progress {
+    margin: 12px 0;
+  }
+  
+  .primary-button {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .primary-button:hover {
+    background-color: #0051a2;
+    color: white;
+  }
+  
+  .no-courses {
+    text-align: center;
+    padding: 40px;
+    background-color: var(--light-gray);
+    border-radius: var(--border-radius);
+  }
+  
+  .no-courses p {
+    margin-bottom: 16px;
+    color: var(--medium-gray);
+  }
+  
+  .course-badge.completed {
+    background-color: var(--success-color);
+  }
+  
+  .course-badge.in-progress {
+    background-color: #ff9500;
+  }
+  
+  

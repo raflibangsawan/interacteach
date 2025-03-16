@@ -1,0 +1,224 @@
+/* Base Styles */
+:root {
+    --primary-color: #0071e3;
+    --secondary-color: #1d1d1f;
+    --background-color: #ffffff;
+    --text-color: #1d1d1f;
+    --light-gray: #f5f5f7;
+    --medium-gray: #86868b;
+    --border-color: #d2d2d7;
+    --success-color: #34c759;
+    --error-color: #ff3b30;
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+      "Open Sans", "Helvetica Neue", sans-serif;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  
+  a:hover {
+    color: #0051a2;
+  }
+  
+  /* Header Styles */
+  .header {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+  }
+  
+  .logo a {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--secondary-color);
+  }
+  
+  .nav-list {
+    display: flex;
+    list-style: none;
+  }
+  
+  .nav-item {
+    margin-left: 24px;
+  }
+  
+  .nav-link {
+    color: var(--secondary-color);
+    font-weight: 500;
+    font-size: 16px;
+  }
+  
+  .nav-link:hover {
+    color: var(--primary-color);
+  }
+  
+  .mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+  }
+  
+  .mobile-menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: var(--secondary-color);
+    margin: 5px 0;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Main Content */
+  .main {
+    min-height: calc(100vh - 64px - 60px);
+    padding: 40px 0;
+  }
+  
+  /* Footer Styles */
+  .footer {
+    background-color: var(--light-gray);
+    padding: 20px 0;
+    text-align: center;
+    color: var(--medium-gray);
+  }
+  
+  /* Messages */
+  .messages {
+    margin-bottom: 24px;
+  }
+  
+  .message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .message.success {
+    background-color: rgba(52, 199, 89, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(52, 199, 89, 0.2);
+  }
+  
+  .message.error {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: var(--error-color);
+    border: 1px solid rgba(255, 59, 48, 0.2);
+  }
+  
+  .message.info {
+    background-color: rgba(0, 113, 227, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 113, 227, 0.2);
+  }
+  
+  /* Logout Form */
+  .logout-form {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .logout-button {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    color: inherit;
+  }
+  
+  .logout-button:hover {
+    color: var(--primary-color);
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .header-content {
+      position: relative;
+    }
+  
+    .nav {
+      position: absolute;
+      top: 64px;
+      left: 0;
+      right: 0;
+      background-color: var(--background-color);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      display: none;
+    }
+  
+    .nav.active {
+      display: block;
+    }
+  
+    .nav-list {
+      flex-direction: column;
+    }
+  
+    .nav-item {
+      margin: 0;
+      margin-bottom: 16px;
+    }
+  
+    .nav-item:last-child {
+      margin-bottom: 0;
+    }
+  
+    .mobile-menu-toggle {
+      display: block;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .hero {
+      padding: 60px 0;
+    }
+  
+    .hero-title {
+      font-size: 28px;
+    }
+  
+    .hero-subtitle {
+      font-size: 16px;
+    }
+  }
+  
+  

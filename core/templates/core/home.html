@@ -2,12 +2,16 @@
 
 {% block title %}Home{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="/static/core/css/home.css">
+{% endblock %}
+
 {% block content %}
 <section class="hero">
     <div class="hero-content">
         <h1 class="hero-title">Welcome to InteracTeach</h1>
         <p class="hero-subtitle">Discover courses to enhance your skills and knowledge</p>
-        <a href="{% url 'course_list' %}" class="hero-button">Browse All Courses</a>
+        <a href="{% url 'courses:course_list' %}" class="hero-button">Browse All Courses</a>
     </div>
 </section>
 
@@ -29,14 +33,14 @@
                 <h3 class="course-title">{{ course.title }}</h3>
                 <p class="course-instructor">{{ course.instructor }}</p>
                 <p class="course-description">{{ course.description }}</p>
-                <a href="{% url 'course_detail' course_slug=course.slug %}" class="course-button">Continue</a>
+                <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="course-button">Continue</a>
             </div>
         </div>
         {% endfor %}
     </div>
     
     <div class="section-footer">
-        <a href="{% url 'my_courses' %}" class="text-link">View all my courses</a>
+        <a href="{% url 'courses:my_courses' %}" class="text-link">View all my courses</a>
     </div>
 </section>
 {% endif %}
@@ -58,7 +62,7 @@
                 <h3 class="course-title">{{ course.title }}</h3>
                 <p class="course-instructor">{{ course.instructor }}</p>
                 <p class="course-description">{{ course.description }}</p>
-                <a href="{% url 'course_detail' course_slug=course.slug %}" class="course-button">View Course</a>
+                <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="course-button">View Course</a>
             </div>
         </div>
         {% empty %}
@@ -67,8 +71,12 @@
     </div>
     
     <div class="section-footer">
-        <a href="{% url 'course_list' %}" class="text-link">View all courses</a>
+        <a href="{% url 'courses:course_list' %}" class="text-link">View all courses</a>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/core/js/home.js"></script>
 {% endblock %}
 

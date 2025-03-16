@@ -1,0 +1,131 @@
+/* Lesson Detail Page Styles */
+.lesson-container {
+    display: flex;
+    gap: 32px;
+  }
+  
+  .lesson-sidebar {
+    flex: 0 0 250px;
+    border-right: 1px solid var(--border-color);
+    padding-right: 24px;
+  }
+  
+  .lesson-main {
+    flex: 1;
+  }
+  
+  .course-info {
+    margin-bottom: 24px;
+  }
+  
+  .back-to-course {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--primary-color);
+  }
+  
+  .module-lessons .module-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--secondary-color);
+  }
+  
+  .lesson-item.active .lesson-link {
+    color: var(--primary-color);
+    font-weight: 500;
+  }
+  
+  .lesson-header {
+    margin-bottom: 24px;
+  }
+  
+  .lesson-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--secondary-color);
+  }
+  
+  .lesson-video {
+    margin-bottom: 24px;
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .lesson-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+  }
+  
+  .lesson-content {
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  
+  .lesson-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .lesson-navigation {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .prev-lesson,
+  .next-lesson {
+    display: inline-flex;
+    align-items: center;
+    color: var(--secondary-color);
+    font-weight: 500;
+  }
+  
+  .nav-arrow {
+    margin: 0 4px;
+  }
+  
+  .complete-button {
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .complete-button:hover {
+    background-color: #0051a2;
+  }
+  
+  .complete-button.completed {
+    background-color: var(--success-color);
+    cursor: default;
+  }
+  
+  @media (max-width: 768px) {
+    .lesson-container {
+      flex-direction: column;
+    }
+  
+    .lesson-sidebar {
+      border-right: none;
+      border-bottom: 1px solid var(--border-color);
+      padding-right: 0;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+  }
+  
+  

@@ -1,33 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-# Remove imports from core.models and import from courses.models instead
-from courses.models import Course, Module, Lesson, Enrollment, LessonProgress
-
-@login_required
-def home(request):
-    # Get the latest courses
-    latest_courses = Course.objects.all().order_by('-created_at')[:6]
-    
-    # Get the user's enrolled courses
-    enrolled_courses = []
-    if request.user.is_authenticated:
-        enrolled_courses = Course.objects.filter(
-            enrollments__user=request.user
-        ).order_by('-enrollments__enrolled_at')[:3]
-    
-    context = {
-        'latest_courses': latest_courses,
-        'enrolled_courses': enrolled_courses
-    }
-    
-    return render(request, 'core/home.html', context)
-
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+from .models import Course, Module, Lesson, Enrollment, LessonProgress
 
 @login_required
 def course_list(request):
@@ -59,7 +34,7 @@ def course_list(request):
         'levels': levels
     }
     
-    return render(request, 'core/course_list.html', context)
+    return render(request, 'courses/course_list.html', context)
 
 @login_required
 def course_detail(request, course_slug):
@@ -74,7 +49,7 @@ def course_detail(request, course_slug):
     
     # Calculate course progress if enrolled
     progress_percentage = 0
-    progress_width = "0%"  # Add this line for the CSS width value
+    progress_width = "0%"
     
     if is_enrolled:
         enrollment = Enrollment.objects.get(user=request.user, course=course)
@@ -87,17 +62,17 @@ def course_detail(request, course_slug):
         
         if total_lessons > 0:
             progress_percentage = (completed_lessons / total_lessons) * 100
-            progress_width = f"{int(progress_percentage)}%"  # Format as CSS width value
+            progress_width = f"{int(progress_percentage)}%"
     
     context = {
         'course': course,
         'modules': modules,
         'is_enrolled': is_enrolled,
         'progress_percentage': progress_percentage,
-        'progress_width': progress_width  # Add this to the context
+        'progress_width': progress_width
     }
     
-    return render(request, 'core/course_detail.html', context)
+    return render(request, 'courses/course_detail.html', context)
 
 @login_required
 def enroll_course(request, course_slug):
@@ -112,9 +87,9 @@ def enroll_course(request, course_slug):
             enrollment = Enrollment.objects.create(user=request.user, course=course)
             messages.success(request, f"Successfully enrolled in {course.title}")
         
-        return redirect('course_detail', course_slug=course_slug)
+        return redirect('courses:course_detail', course_slug=course_slug)
     
-    return redirect('course_list')
+    return redirect('courses:course_list')
 
 @login_required
 def lesson_detail(request, course_slug, lesson_id):
@@ -127,7 +102,7 @@ def lesson_detail(request, course_slug, lesson_id):
         enrollment = Enrollment.objects.get(user=request.user, course=course)
     except Enrollment.DoesNotExist:
         messages.error(request, "You must be enrolled in this course to view lessons")
-        return redirect('course_detail', course_slug=course_slug)
+        return redirect('courses:course_detail', course_slug=course_slug)
     
     # Get or create lesson progress
     lesson_progress, created = LessonProgress.objects.get_or_create(
@@ -181,7 +156,7 @@ def lesson_detail(request, course_slug, lesson_id):
         'module': module
     }
     
-    return render(request, 'core/lesson_detail.html', context)
+    return render(request, 'courses/lesson_detail.html', context)
 
 @login_required
 def my_courses(request):
@@ -197,14 +172,14 @@ def my_courses(request):
                 completed=True
             ).count()
             enrollment.progress_percentage = (completed_lessons / total_lessons) * 100
-            enrollment.progress_width = f"{int(enrollment.progress_percentage)}%"  # Format as CSS width value
+            enrollment.progress_width = f"{int(enrollment.progress_percentage)}%"
         else:
             enrollment.progress_percentage = 0
-            enrollment.progress_width = "0%"  # Format as CSS width value
+            enrollment.progress_width = "0%"
     
     context = {
         'enrollments': enrollments
     }
     
-    return render(request, 'core/my_courses.html', context)
+    return render(request, 'courses/my_courses.html', context)
 

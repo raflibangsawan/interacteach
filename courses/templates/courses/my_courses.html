@@ -1,6 +1,10 @@
-{% extends 'core/base.html' %}
+{% extends 'courses/base.html' %}
 
 {% block title %}My Courses{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/my_courses.css">
+{% endblock %}
 
 {% block content %}
 <section class="page-header">
@@ -32,7 +36,7 @@
                             <p class="progress-text">{{ enrollment.progress_percentage|floatformat:0 }}% Complete</p>
                         </div>
                         
-                        <a href="{% url 'course_detail' course_slug=enrollment.course.slug %}" class="course-button">Continue</a>
+                        <a href="{% url 'courses:course_detail' course_slug=enrollment.course.slug %}" class="course-button">Continue</a>
                     </div>
                 </div>
             {% endfor %}
@@ -40,7 +44,7 @@
     {% else %}
         <div class="no-courses">
             <p>You are not enrolled in any courses yet.</p>
-            <a href="{% url 'course_list' %}" class="primary-button">Browse Courses</a>
+            <a href="{% url 'courses:course_list' %}" class="primary-button">Browse Courses</a>
         </div>
     {% endif %}
 </section>

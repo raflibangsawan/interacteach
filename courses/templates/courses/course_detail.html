@@ -1,6 +1,10 @@
-{% extends 'core/base.html' %}
+{% extends 'courses/base.html' %}
 
 {% block title %}{{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/course_detail.css">
+{% endblock %}
 
 {% block content %}
 <div class="course-header">
@@ -57,7 +61,7 @@
                                     {% for lesson in module.lessons.all %}
                                         <li class="lesson-item">
                                             {% if is_enrolled %}
-                                                <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=lesson.id %}" class="lesson-link">
+                                                <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=lesson.id %}" class="lesson-link">
                                                     {{ lesson.title }}
                                                 </a>
                                             {% else %}
@@ -87,12 +91,12 @@
                 </div>
                 
                 {% if modules and modules.0.lessons.all %}
-                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=modules.0.lessons.all.0.id %}" class="start-course-button">
+                    <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=modules.0.lessons.all.0.id %}" class="start-course-button">
                         {% if progress_percentage > 0 %}Continue Course{% else %}Start Course{% endif %}
                     </a>
                 {% endif %}
             {% else %}
-                <form method="post" action="{% url 'enroll_course' course_slug=course.slug %}">
+                <form method="post" action="{% url 'courses:enroll_course' course_slug=course.slug %}">
                     {% csrf_token %}
                     <button type="submit" class="enroll-button">Enroll Now</button>
                 </form>
@@ -118,32 +122,9 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    function toggleModule(moduleId) {
-        const moduleContent = document.getElementById(`module-${moduleId}`);
-        const moduleToggle = moduleContent.previousElementSibling.querySelector('.module-toggle');
-        
-        if (moduleContent.style.display === 'block') {
-            moduleContent.style.display = 'none';
-            moduleToggle.textContent = '+';
-        } else {
-            moduleContent.style.display = 'block';
-            moduleToggle.textContent = '−';
-        }
-    }
-    
-    // Open the first module by default
-    document.addEventListener('DOMContentLoaded', function() {
-        const firstModule = document.querySelector('.module-card');
-        if (firstModule) {
-            const moduleId = firstModule.querySelector('.module-content').id.replace('module-', '');
-            toggleModule(moduleId);
-        }
-    });
-</script>
+<script src="/static/courses/js/course_detail.js"></script>
 {% endblock %}
 

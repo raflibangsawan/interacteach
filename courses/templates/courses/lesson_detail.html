@@ -1,13 +1,17 @@
-{% extends 'core/base.html' %}
+{% extends 'courses/base.html' %}
 
 {% block title %}{{ lesson.title }} | {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/lesson_detail.css">
+{% endblock %}
 
 {% block content %}
 <div class="lesson-container">
     <div class="lesson-sidebar">
         <div class="course-info">
             <h3 class="course-title">{{ course.title }}</h3>
-            <a href="{% url 'course_detail' course_slug=course.slug %}" class="back-to-course">Back to course</a>
+            <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="back-to-course">Back to course</a>
         </div>
         
         <div class="module-lessons">
@@ -15,7 +19,7 @@
             <ul class="lesson-list">
                 {% for lesson_item in module.lessons.all %}
                     <li class="lesson-item {% if lesson_item.id == lesson.id %}active{% endif %}">
-                        <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=lesson_item.id %}" class="lesson-link">
+                        <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=lesson_item.id %}" class="lesson-link">
                             {{ lesson_item.title }}
                         </a>
                     </li>
@@ -42,13 +46,13 @@
         <div class="lesson-actions">
             <div class="lesson-navigation">
                 {% if prev_lesson %}
-                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=prev_lesson.id %}" class="prev-lesson">
+                    <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=prev_lesson.id %}" class="prev-lesson">
                         <span class="nav-arrow">←</span> Previous Lesson
                     </a>
                 {% endif %}
                 
                 {% if next_lesson %}
-                    <a href="{% url 'lesson_detail' course_slug=course.slug lesson_id=next_lesson.id %}" class="next-lesson">
+                    <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=next_lesson.id %}" class="next-lesson">
                         Next Lesson <span class="nav-arrow">→</span>
                     </a>
                 {% endif %}
