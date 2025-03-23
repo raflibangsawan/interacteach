@@ -208,3 +208,14 @@ def my_courses(request):
     
     return render(request, 'core/my_courses.html', context)
 
+
+def register(request):
+    test_tampil = ['elemen1', 'elemen2', 'elemen3']
+    test2 = 10000 * 5
+
+    context = {
+        'variable': test_tampil,
+        'variable2': test2
+    }
+
+    return render(request, 'core/register.html', context)

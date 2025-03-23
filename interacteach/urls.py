@@ -14,5 +14,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
     path('logout/', core_views.logout_view, name='logout'),
     path('courses/', include('courses.urls')),  # Include courses URLs
+    path('register/', core_views.register, name='register')
 ]
 
