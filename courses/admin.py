@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import Course, Module, Lesson, Enrollment, LessonProgress
 
-# Custom admin actions
 def mark_as_completed(modeladmin, request, queryset):
     queryset.update(completed=True)
 mark_as_completed.short_description = "Mark selected items as completed"

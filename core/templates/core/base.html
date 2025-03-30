@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InteracTeach - {% block title %}Learning Management System{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/core/css/base.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap">
     {% block extra_css %}{% endblock %}
 </head>
@@ -24,7 +24,7 @@
                             <li class="nav-item">
                                 <form method="post" action="{% url 'logout' %}" class="logout-form">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link logout-button">Logout</button>
+                                    <button type="submit" class="nav-link">Logout</button>
                                 </form>
                             </li>
                         {% else %}
@@ -63,7 +63,7 @@
         </div>
     </footer>
 
-    <script src="/static/js/main.js"></script>
+    <script src="/static/core/js/base.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
