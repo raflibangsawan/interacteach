@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Course, Module, Lesson, Enrollment, LessonProgress
+from .models import Course, Module, Lesson, Enrollment, LessonProgress, InstructorProfile
 
+# Custom admin actions
 def mark_as_completed(modeladmin, request, queryset):
     queryset.update(completed=True)
 mark_as_completed.short_description = "Mark selected items as completed"
@@ -8,6 +9,20 @@ mark_as_completed.short_description = "Mark selected items as completed"
 def mark_as_not_completed(modeladmin, request, queryset):
     queryset.update(completed=False)
 mark_as_not_completed.short_description = "Mark selected items as not completed"
+
+def publish_courses(modeladmin, request, queryset):
+    queryset.update(is_published=True)
+publish_courses.short_description = "Publish selected courses"
+
+def unpublish_courses(modeladmin, request, queryset):
+    queryset.update(is_published=False)
+unpublish_courses.short_description = "Unpublish selected courses"
+
+@admin.register(InstructorProfile)
+class InstructorProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'expertise', 'courses_count')
+    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name', 'expertise')
+    raw_id_fields = ('user',)
 
 class ModuleInline(admin.StackedInline):
     model = Module
@@ -19,13 +34,14 @@ class LessonInline(admin.TabularInline):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'instructor', 'level', 'duration', 'total_modules', 'total_lessons', 'total_enrollments', 'created_at')
-    list_filter = ('level', 'created_at')
+    list_display = ('title', 'instructor', 'instructor_user', 'duration', 'is_published', 'total_modules', 'total_lessons', 'total_enrollments', 'created_at')
+    list_filter = ('is_published', 'created_at')
     search_fields = ('title', 'description', 'instructor')
     prepopulated_fields = {'slug': ('title',)}
     inlines = [ModuleInline]
     date_hierarchy = 'created_at'
     readonly_fields = ('total_modules', 'total_lessons', 'total_enrollments')
+    actions = [publish_courses, unpublish_courses]
     
     def total_modules(self, obj):
         return obj.total_modules()

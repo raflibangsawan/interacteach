@@ -13,9 +13,22 @@
         <p class="course-header-instructor">Instructor: {{ course.instructor }}</p>
         
         <div class="course-header-meta">
-            <span class="course-header-level">{{ course.get_level_display }}</span>
             <span class="course-header-duration">{{ course.duration }}</span>
+            {% if not course.is_published %}
+                <span class="course-header-status draft">Draft</span>
+            {% endif %}
         </div>
+        
+        {% if is_instructor %}
+        <div class="instructor-actions">
+            <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-primary">Edit Course</a>
+            {% if course.is_published %}
+                <a href="{% url 'courses:unpublish_course' course_slug=course.slug %}" class="btn btn-secondary">Unpublish</a>
+            {% else %}
+                <a href="{% url 'courses:publish_course' course_slug=course.slug %}" class="btn btn-success">Publish</a>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
     <div class="course-header-image">
         <img src="{{ course.image }}" alt="{{ course.title }}">
@@ -60,7 +73,7 @@
                                 <ul class="lesson-list">
                                     {% for lesson in module.lessons.all %}
                                         <li class="lesson-item">
-                                            {% if is_enrolled %}
+                                            {% if is_enrolled or is_instructor %}
                                                 <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=lesson.id %}" class="lesson-link">
                                                     {{ lesson.title }}
                                                 </a>
@@ -72,12 +85,31 @@
                                         <li class="no-lessons">No lessons available in this module.</li>
                                     {% endfor %}
                                 </ul>
+                                
+                                {% if is_instructor %}
+                                <div class="module-actions">
+                                    <a href="{% url 'courses:edit_module' course_slug=course.slug module_id=module.id %}" class="btn btn-sm btn-primary">Edit Module</a>
+                                    <a href="{% url 'courses:create_lesson' course_slug=course.slug module_id=module.id %}" class="btn btn-sm btn-secondary">Add Lesson</a>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
                 </div>
+                
+                {% if is_instructor %}
+                <div class="add-module-action">
+                    <a href="{% url 'courses:create_module' course_slug=course.slug %}" class="btn btn-primary">Add Module</a>
+                </div>
+                {% endif %}
             {% else %}
                 <p class="no-modules">No content available for this course yet.</p>
+                
+                {% if is_instructor %}
+                <div class="add-module-action">
+                    <a href="{% url 'courses:create_module' course_slug=course.slug %}" class="btn btn-primary">Add First Module</a>
+                </div>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -95,11 +127,15 @@
                         {% if progress_percentage > 0 %}Continue Course{% else %}Start Course{% endif %}
                     </a>
                 {% endif %}
-            {% else %}
+            {% elif not is_instructor and course.is_published %}
                 <form method="post" action="{% url 'courses:enroll_course' course_slug=course.slug %}">
                     {% csrf_token %}
                     <button type="submit" class="enroll-button">Enroll Now</button>
                 </form>
+            {% elif not course.is_published %}
+                <div class="course-status-message">
+                    <p>This course is not yet published.</p>
+                </div>
             {% endif %}
         </div>
         
@@ -107,16 +143,20 @@
             <h3 class="card-title">Course Information</h3>
             <ul class="info-list">
                 <li class="info-item">
-                    <span class="info-label">Level:</span>
-                    <span class="info-value">{{ course.get_level_display }}</span>
-                </li>
-                <li class="info-item">
                     <span class="info-label">Duration:</span>
                     <span class="info-value">{{ course.duration }}</span>
                 </li>
                 <li class="info-item">
                     <span class="info-label">Instructor:</span>
                     <span class="info-value">{{ course.instructor }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Enrollments:</span>
+                    <span class="info-value">{{ course.enrollments.count }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Last Updated:</span>
+                    <span class="info-value">{{ course.updated_at|date:"F j, Y" }}</span>
                 </li>
             </ul>
         </div>

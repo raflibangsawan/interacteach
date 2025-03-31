@@ -29,7 +29,6 @@ def logout_view(request):
 @login_required
 def course_list(request):
     search_query = request.GET.get('search', '')
-    level_filter = request.GET.get('level', '')
     
     courses = Course.objects.all()
     
@@ -39,16 +38,9 @@ def course_list(request):
             Q(description__icontains=search_query)
         )
     
-    if level_filter:
-        courses = courses.filter(level=level_filter)
-    
-    levels = Course.objects.values_list('level', flat=True).distinct()
-    
     context = {
         'courses': courses,
         'search_query': search_query,
-        'level_filter': level_filter,
-        'levels': levels
     }
     
     return render(request, 'core/course_list.html', context)

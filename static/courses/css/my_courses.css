@@ -1,41 +1,315 @@
 /* My Courses Page Styles */
+.my-courses-section {
+  padding: 20px 0;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.page-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--secondary-color);
+}
+
+.page-subtitle {
+  color: var(--medium-gray);
+  font-size: 18px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+/* Enhanced Course Card */
+.course-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid #f0f0f0;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.course-image {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.course-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.course-card:hover .course-image img {
+  transform: scale(1.05);
+}
+
+/* Improved Course Badge */
+.course-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.course-badge.completed {
+  background-color: var(--success-color);
+}
+
+.course-badge.in-progress {
+  background-color: #ff9500;
+}
+
+.course-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.course-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--secondary-color);
+  line-height: 1.3;
+}
+
+.course-instructor {
+  color: var(--medium-gray);
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.course-instructor:before {
+  content: "👨‍🏫";
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+/* Enhanced Progress Bar */
 .course-progress {
-    margin: 12px 0;
+  margin: 16px 0;
+}
+
+.progress-bar {
+  height: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(to right, #0071e3, #00a2ff);
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  color: var(--medium-gray);
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.progress-percentage {
+  color: var(--primary-color);
+}
+
+/* Course Button */
+.course-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: auto;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.course-button:hover {
+  background-color: #0051a2;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Course Stats */
+.course-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--medium-gray);
+}
+
+.course-stat {
+  display: flex;
+  align-items: center;
+}
+
+.course-stat-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+/* Empty State */
+.no-courses {
+  text-align: center;
+  padding: 60px 30px;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  border: 1px dashed #d2d2d7;
+}
+
+.no-courses p {
+  margin-bottom: 20px;
+  color: var(--medium-gray);
+  font-size: 18px;
+}
+
+.primary-button {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-decoration: none;
+}
+
+.primary-button:hover {
+  background-color: #0051a2;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Course Categories */
+.course-categories {
+  margin-bottom: 30px;
+}
+
+.category-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 30px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.category-tab {
+  padding: 12px 24px;
+  font-weight: 500;
+  color: var(--medium-gray);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.category-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.category-tab:hover:not(.active) {
+  color: var(--secondary-color);
+  border-bottom-color: #e0e0e0;
+}
+
+/* Course Sorting */
+.course-sorting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sort-label {
+  font-weight: 500;
+  color: var(--secondary-color);
+}
+
+.sort-select {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: white;
+  color: var(--secondary-color);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
-  
-  .primary-button {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
+
+  .course-sorting {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
-  
-  .primary-button:hover {
-    background-color: #0051a2;
-    color: white;
+
+  .category-tab {
+    padding: 10px 16px;
   }
-  
-  .no-courses {
-    text-align: center;
-    padding: 40px;
-    background-color: var(--light-gray);
-    border-radius: var(--border-radius);
+}
+
+@media (max-width: 480px) {
+  .courses-grid {
+    grid-template-columns: 1fr;
   }
-  
-  .no-courses p {
-    margin-bottom: 16px;
-    color: var(--medium-gray);
+
+  .page-title {
+    font-size: 28px;
   }
-  
-  .course-badge.completed {
-    background-color: var(--success-color);
+
+  .page-subtitle {
+    font-size: 16px;
   }
-  
-  .course-badge.in-progress {
-    background-color: #ff9500;
-  }
-  
-  
+}
+

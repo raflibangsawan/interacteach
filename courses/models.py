@@ -3,19 +3,41 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.urls import reverse
 
+class InstructorProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='instructor_profile')
+    bio = models.TextField(blank=True)
+    expertise = models.CharField(max_length=200, blank=True)
+    website = models.URLField(blank=True)
+    profile_image = models.CharField(max_length=200, default='/static/courses/images/instructor-placeholder.jpg')
+    
+    def __str__(self):
+        return f"Instructor: {self.user.get_full_name() or self.user.username}"
+    
+    @property
+    def full_name(self):
+        return self.user.get_full_name() or self.user.username
+    
+    @property
+    def courses_count(self):
+        return self.courses.count()
+
 class Course(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
     description = models.TextField()
-    instructor = models.CharField(max_length=100)
+    instructor = models.CharField(max_length=100)  # Keep for backward compatibility
+    instructor_user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='created_courses'
+    )
     image = models.CharField(max_length=200, default='/static/courses/images/course-placeholder.jpg')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     duration = models.CharField(max_length=50, default="4 weeks")
-    level = models.CharField(max_length=20, choices=[
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced')
-    ], default='beginner')
+    is_published = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         if not self.slug:

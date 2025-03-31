@@ -1,0 +1,39 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Unpublish Course{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Unpublish Course</h1>
+    <p class="page-subtitle">Hide your course from students</p>
+</div>
+
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <h2 class="confirmation-title">Are you sure you want to unpublish "{{ course.title }}"?</h2>
+        
+        <div class="confirmation-details">
+            <p>Unpublishing this course will:</p>
+            <ul class="checklist">
+                <li>Hide it from the course catalog</li>
+                <li>Prevent new students from enrolling</li>
+                <li>Still allow currently enrolled students to access the content</li>
+            </ul>
+            <p>You can publish the course again at any time.</p>
+        </div>
+        
+        <div class="confirmation-actions">
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">Yes, Unpublish Course</button>
+                <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

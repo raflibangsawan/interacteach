@@ -1,0 +1,84 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Become an Instructor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="become-instructor">
+    <div class="page-header">
+        <h1 class="page-title">Become an Instructor</h1>
+        <p class="page-subtitle">Share your knowledge and expertise with students around the world</p>
+    </div>
+
+    <div class="instructor-benefits">
+        <h2 class="section-title">Why Become an Instructor?</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">📚</div>
+                <h3 class="benefit-title">Share Knowledge</h3>
+                <p class="benefit-description">Help others learn and grow by sharing your expertise</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🌟</div>
+                <h3 class="benefit-title">Build Your Brand</h3>
+                <p class="benefit-description">Establish yourself as an expert in your field</p>
+            </div>
+            <div class="benefit-card">
+                <div class="benefit-icon">🔄</div>
+                <h3 class="benefit-title">Flexible Teaching</h3>
+                <p class="benefit-description">Create courses at your own pace and on your schedule</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructor-form-container">
+        <h2 class="section-title">Complete Your Instructor Profile</h2>
+        <form method="post" class="instructor-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                {{ form.bio }}
+                {% if form.bio.errors %}
+                <div class="form-error">{{ form.bio.errors }}</div>
+                {% endif %}
+                <div class="form-help">Tell students about yourself and your experience</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.expertise.id_for_label }}" class="form-label">Areas of Expertise</label>
+                {{ form.expertise }}
+                {% if form.expertise.errors %}
+                <div class="form-error">{{ form.expertise.errors }}</div>
+                {% endif %}
+                <div class="form-help">What subjects are you knowledgeable about?</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.website.id_for_label }}" class="form-label">Website (Optional)</label>
+                {{ form.website }}
+                {% if form.website.errors %}
+                <div class="form-error">{{ form.website.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.profile_image.id_for_label }}" class="form-label">Profile Image URL</label>
+                {{ form.profile_image }}
+                {% if form.profile_image.errors %}
+                <div class="form-error">{{ form.profile_image.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Become an Instructor</button>
+                <a href="{% url 'courses:course_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

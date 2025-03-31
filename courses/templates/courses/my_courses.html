@@ -1,6 +1,6 @@
 {% extends 'courses/base.html' %}
 
-{% block title %}My Courses{% endblock %}
+{% block title %}My Learning{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/courses/css/my_courses.css">
@@ -8,12 +8,32 @@
 
 {% block content %}
 <section class="page-header">
-    <h1 class="page-title">My Courses</h1>
-    <p class="page-subtitle">Track your learning progress</p>
+  <h1 class="page-title">My Learning</h1>
+  <p class="page-subtitle">Track your progress and continue your educational journey</p>
 </section>
 
-<section class="my-courses-section">
-    {% if enrollments %}
+{% if enrollments %}
+    <section class="course-categories">
+        <div class="category-tabs">
+            <div class="category-tab active">All Courses</div>
+            <div class="category-tab">In Progress</div>
+            <div class="category-tab">Completed</div>
+        </div>
+    </section>
+    
+    <section class="course-sorting">
+        <div class="courses-count">{{ enrollments|length }} courses</div>
+        <div class="sort-options">
+            <span class="sort-label">Sort by:</span>
+            <select class="sort-select">
+                <option value="recent">Recently Accessed</option>
+                <option value="progress">Progress</option>
+                <option value="title">Title</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="my-courses-section">
         <div class="courses-grid">
             {% for enrollment in enrollments %}
                 <div class="course-card">
@@ -29,24 +49,67 @@
                         <h3 class="course-title">{{ enrollment.course.title }}</h3>
                         <p class="course-instructor">{{ enrollment.course.instructor }}</p>
                         
+                        <div class="course-stats">
+                            <div class="course-stat">
+                                <span class="course-stat-icon">📅</span>
+                                <span>{{ enrollment.course.duration }}</span>
+                            </div>
+                            <div class="course-stat">
+                                <span class="course-stat-icon">📚</span>
+                                <span>{{ enrollment.course.modules.count }} modules</span>
+                            </div>
+                        </div>
+                        
                         <div class="course-progress">
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: {{ enrollment.progress_width }}"></div>
                             </div>
-                            <p class="progress-text">{{ enrollment.progress_percentage|floatformat:0 }}% Complete</p>
+                            <div class="progress-text">
+                                <span>Progress</span>
+                                <span class="progress-percentage">{{ enrollment.progress_percentage|floatformat:0 }}%</span>
+                            </div>
                         </div>
                         
-                        <a href="{% url 'courses:course_detail' course_slug=enrollment.course.slug %}" class="course-button">Continue</a>
+                        <a href="{% url 'courses:course_detail' course_slug=enrollment.course.slug %}" class="course-button">Continue Learning</a>
                     </div>
                 </div>
             {% endfor %}
         </div>
-    {% else %}
-        <div class="no-courses">
-            <p>You are not enrolled in any courses yet.</p>
-            <a href="{% url 'courses:course_list' %}" class="primary-button">Browse Courses</a>
-        </div>
-    {% endif %}
-</section>
+    </section>
+{% else %}
+    <div class="no-courses">
+        <p>You are not enrolled in any courses yet.</p>
+        <a href="{% url 'courses:course_list' %}" class="primary-button">Browse Courses</a>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category tabs functionality
+        const tabs = document.querySelectorAll('.category-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Here you would typically filter the courses based on the selected category
+                // For now, this is just a UI demonstration
+            });
+        });
+        
+        // Sort select functionality
+        const sortSelect = document.querySelector('.sort-select');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function() {
+                // Here you would typically sort the courses based on the selected option
+                // For now, this is just a UI demonstration
+            });
+        }
+    });
+</script>
 {% endblock %}
 

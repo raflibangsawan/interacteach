@@ -1,0 +1,38 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Delete Lesson{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Delete Lesson</h1>
+  <p class="page-subtitle">This action cannot be undone</p>
+</div>
+
+<div class="confirmation-container">
+  <div class="confirmation-card danger">
+      <h2 class="confirmation-title">Are you sure you want to delete "{{ lesson.title }}"?</h2>
+      
+      <div class="confirmation-details">
+          <p class="warning-text">This action cannot be undone. Deleting this lesson will:</p>
+          <ul class="checklist">
+              <li>Permanently remove the lesson from your module</li>
+              <li>Delete all content associated with this lesson</li>
+              <li>Remove all student progress data for this lesson</li>
+          </ul>
+      </div>
+      
+      <div class="confirmation-actions">
+          <form method="post">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Yes, Delete Lesson Permanently</button>
+              <a href="{% url 'courses:edit_module' course_slug=course.slug module_id=module.id %}" class="btn btn-secondary">Cancel</a>
+          </form>
+      </div>
+  </div>
+</div>
+{% endblock %}
+

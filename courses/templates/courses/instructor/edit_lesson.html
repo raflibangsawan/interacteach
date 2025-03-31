@@ -1,0 +1,103 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}{% if is_new %}Create Lesson{% else %}Edit Lesson{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{% if is_new %}Create New Lesson{% else %}Edit Lesson{% endif %}</h1>
+  <p class="page-subtitle">{% if is_new %}Add a new lesson to your module{% else %}Update lesson content and details{% endif %}</p>
+</div>
+
+<div class="lesson-form-container">
+  <form method="post" class="lesson-form">
+      {% csrf_token %}
+      
+      <div class="form-group">
+          <label for="{{ form.title.id_for_label }}" class="form-label">Lesson Title</label>
+          {{ form.title }}
+          {% if form.title.errors %}
+          <div class="form-error">{{ form.title.errors }}</div>
+          {% endif %}
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.video_url.id_for_label }}" class="form-label">Video URL (Optional)</label>
+          {{ form.video_url }}
+          {% if form.video_url.errors %}
+          <div class="form-error">{{ form.video_url.errors }}</div>
+          {% endif %}
+          <div class="form-help">Enter a YouTube or Vimeo embed URL (e.g., https://www.youtube.com/embed/VIDEO_ID)</div>
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.content.id_for_label }}" class="form-label">Lesson Content</label>
+          {{ form.content }}
+          {% if form.content.errors %}
+          <div class="form-error">{{ form.content.errors }}</div>
+          {% endif %}
+          <div class="form-help">You can use Markdown formatting for rich text</div>
+      </div>
+      
+      <div class="form-group">
+          <label for="{{ form.order.id_for_label }}" class="form-label">Order</label>
+          {{ form.order }}
+          {% if form.order.errors %}
+          <div class="form-error">{{ form.order.errors }}</div>
+          {% endif %}
+          <div class="form-help">The order in which this lesson appears in the module (lower numbers appear first)</div>
+      </div>
+      
+      <div class="form-actions">
+          <button type="submit" class="btn btn-primary">{% if is_new %}Create Lesson{% else %}Save Changes{% endif %}</button>
+          <a href="{% url 'courses:edit_module' course_slug=course.slug module_id=module.id %}" class="btn btn-secondary">Cancel</a>
+      </div>
+  </form>
+</div>
+
+{% if not is_new %}
+<div class="preview-section">
+  <h2 class="section-title">Content Preview</h2>
+  <p class="form-help">This is how your lesson content will appear to students</p>
+  
+  <div class="preview-content">
+      <div class="preview-content-inner">
+          {{ lesson.content|linebreaks }}
+      </div>
+  </div>
+</div>
+
+<div class="danger-zone">
+  <h2 class="section-title">Danger Zone</h2>
+  <div class="danger-actions">
+      <a href="{% url 'courses:delete_lesson' course_slug=course.slug module_id=module.id lesson_id=lesson.id %}" class="btn btn-danger">Delete Lesson</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Auto-resize textarea for better content editing experience
+      const contentTextarea = document.getElementById('{{ form.content.id_for_label }}');
+      if (contentTextarea) {
+          contentTextarea.style.minHeight = '300px';
+          
+          // Function to auto-resize textarea based on content
+          function autoResize() {
+              this.style.height = 'auto';
+              this.style.height = (this.scrollHeight) + 'px';
+          }
+          
+          // Apply auto-resize on input and initial load
+          contentTextarea.addEventListener('input', autoResize);
+          autoResize.call(contentTextarea);
+      }
+  });
+</script>
+{% endblock %}
+

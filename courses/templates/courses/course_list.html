@@ -8,59 +8,90 @@
 
 {% block content %}
 <section class="page-header">
-    <h1 class="page-title">All Courses</h1>
-    <p class="page-subtitle">Browse our complete catalog of courses</p>
+  <h1 class="page-title">All Courses</h1>
+  <p class="page-subtitle">Browse our complete catalog of courses to enhance your skills</p>
 </section>
 
 <section class="filter-section">
-    <form method="get" class="filter-form">
-        <div class="search-box">
-            <input type="text" name="search" placeholder="Search courses..." value="{{ search_query }}" class="search-input">
-            <button type="submit" class="search-button">Search</button>
-        </div>
-        
-        <div class="filter-options">
-            <div class="filter-group">
-                <label for="level-filter" class="filter-label">Level:</label>
-                <select name="level" id="level-filter" class="filter-select" onchange="this.form.submit()">
-                    <option value="">All Levels</option>
-                    {% for level in levels %}
-                        <option value="{{ level }}" {% if level_filter == level %}selected{% endif %}>
-                            {{ level|title }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-    </form>
+  <form method="get" class="filter-form">
+      <div class="search-box">
+          <input type="text" name="search" placeholder="Search courses..." value="{{ search_query }}" class="search-input">
+          <button type="submit" class="search-button">Search</button>
+      </div>
+  </form>
+</section>
+
+<section class="course-categories">
+  <div class="category-tabs">
+      <div class="category-tab active">All Categories</div>
+  </div>
+</section>
+
+<section class="course-sorting">
+  <div class="courses-count">{{ courses|length }} courses available</div>
+  <div class="sort-options">
+      <span class="sort-label">Sort by:</span>
+      <select class="sort-select">
+          <option value="newest">Newest</option>
+          <option value="popular">Most Popular</option>
+          <option value="title">Title</option>
+      </select>
+  </div>
 </section>
 
 <section class="courses-section">
-    <div class="courses-grid">
-        {% for course in courses %}
-        <div class="course-card">
-            <div class="course-image">
-                <img src="{{ course.image }}" alt="{{ course.title }}">
-                <div class="course-level">{{ course.get_level_display }}</div>
-            </div>
-            <div class="course-content">
-                <h3 class="course-title">{{ course.title }}</h3>
-                <p class="course-instructor">{{ course.instructor }}</p>
-                <div class="course-meta">
-                    <span class="course-duration">{{ course.duration }}</span>
-                    <span class="course-level-badge">{{ course.get_level_display }}</span>
-                </div>
-                <p class="course-description">{{ course.description }}</p>
-                <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="course-button">View Course</a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-courses">
-            <p>No courses found matching your criteria.</p>
-            <a href="{% url 'courses:course_list' %}" class="text-link">Clear filters</a>
-        </div>
-        {% endfor %}
-    </div>
+  <div class="courses-grid">
+      {% for course in courses %}
+      <div class="course-card">
+          <div class="course-image">
+              <img src="{{ course.image }}" alt="{{ course.title }}">
+          </div>
+          <div class="course-content">
+              <h3 class="course-title">{{ course.title }}</h3>
+              <p class="course-instructor">{{ course.instructor }}</p>
+              <div class="course-meta">
+                  <span class="course-duration">{{ course.duration }}</span>
+              </div>
+              <p class="course-description">{{ course.description }}</p>
+              <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="course-button">View Course</a>
+          </div>
+      </div>
+      {% empty %}
+      <div class="no-courses">
+          <p>No courses found matching your criteria.</p>
+          <a href="{% url 'courses:course_list' %}" class="text-link">Clear filters</a>
+      </div>
+      {% endfor %}
+  </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Category tabs functionality
+        const tabs = document.querySelectorAll('.category-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Here you would typically filter the courses based on the selected category
+                // For now, this is just a UI demonstration
+            });
+        });
+        
+        // Sort select functionality
+        const sortSelect = document.querySelector('.sort-select');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', function() {
+                // Here you would typically sort the courses based on the selected option
+                // For now, this is just a UI demonstration
+            });
+        }
+    });
+</script>
 {% endblock %}
 

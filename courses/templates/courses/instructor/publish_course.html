@@ -1,0 +1,39 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Publish Course{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Publish Course</h1>
+    <p class="page-subtitle">Make your course available to students</p>
+</div>
+
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <h2 class="confirmation-title">Are you sure you want to publish "{{ course.title }}"?</h2>
+        
+        <div class="confirmation-details">
+            <p>Publishing this course will make it visible to all students. Before publishing, please ensure:</p>
+            <ul class="checklist">
+                <li>Your course description is complete and accurate</li>
+                <li>You have added all necessary modules and lessons</li>
+                <li>All content has been reviewed for errors</li>
+                <li>Any video content is working correctly</li>
+            </ul>
+        </div>
+        
+        <div class="confirmation-actions">
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Yes, Publish Course</button>
+                <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

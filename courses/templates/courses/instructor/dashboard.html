@@ -1,0 +1,77 @@
+{% extends 'courses/base.html' %}
+
+{% block title %}Instructor Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="instructor-dashboard">
+    <div class="dashboard-header">
+        <h1 class="page-title">Instructor Dashboard</h1>
+        <div class="instructor-info">
+            <div class="instructor-avatar">
+                <img src="{{ instructor_profile.profile_image }}" alt="{{ instructor_profile.full_name }}">
+            </div>
+            <div class="instructor-details">
+                <h2 class="instructor-name">{{ instructor_profile.full_name }}</h2>
+                <p class="instructor-expertise">{{ instructor_profile.expertise }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-value">{{ courses.count }}</div>
+            <div class="stat-label">Courses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_enrollments }}</div>
+            <div class="stat-label">Enrollments</div>
+        </div>
+    </div>
+
+    <div class="dashboard-actions">
+        <a href="{% url 'courses:create_course' %}" class="btn btn-primary">Create New Course</a>
+        <a href="{% url 'courses:instructor_courses' %}" class="btn btn-secondary">Manage Courses</a>
+    </div>
+
+    {% if courses %}
+    <div class="recent-courses">
+        <h2 class="section-title">Your Courses</h2>
+        <div class="courses-grid">
+            {% for course in courses %}
+            <div class="course-card">
+                <div class="course-image">
+                    <img src="{{ course.image }}" alt="{{ course.title }}">
+                    {% if course.is_published %}
+                        <div class="course-badge published">Published</div>
+                    {% else %}
+                        <div class="course-badge draft">Draft</div>
+                    {% endif %}
+                </div>
+                <div class="course-content">
+                    <h3 class="course-title">{{ course.title }}</h3>
+                    <div class="course-meta">
+                        <span class="course-enrollments">{{ course.enrollments.count }} enrollments</span>
+                    </div>
+                    <div class="course-actions">
+                        <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="btn btn-sm btn-secondary">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>You haven't created any courses yet</h2>
+        <p>Get started by creating your first course!</p>
+        <a href="{% url 'courses:create_course' %}" class="btn btn-primary">Create Course</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

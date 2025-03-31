@@ -2,31 +2,26 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Course, Module, Lesson, Enrollment, LessonProgress
+from django.http import HttpResponseForbidden
+from django.urls import reverse
+from django.contrib.auth.models import User
+from .models import Course, Module, Lesson, Enrollment, LessonProgress, InstructorProfile
+from .forms import CourseForm, ModuleForm, LessonForm, InstructorProfileForm
 
 @login_required
 def course_list(request):
     search_query = request.GET.get('search', '')
-    level_filter = request.GET.get('level', '')
     
-    courses = Course.objects.all()
+    courses = Course.objects.filter(is_published=True)
     
     if search_query:
         courses = courses.filter(
             Q(title__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
-    
-    if level_filter:
-        courses = courses.filter(level=level_filter)
-    
-    levels = Course.objects.values_list('level', flat=True).distinct()
-    
     context = {
         'courses': courses,
-        'search_query': search_query,
-        'level_filter': level_filter,
-        'levels': levels
+        'search_query': search_query
     }
     
     return render(request, 'courses/course_list.html', context)
@@ -35,7 +30,15 @@ def course_list(request):
 def course_detail(request, course_slug):
     course = get_object_or_404(Course, slug=course_slug)
     
+    if not course.is_published:
+        if not (request.user.is_staff or 
+                (course.instructor_user and course.instructor_user == request.user)):
+            messages.error(request, "This course is not yet published.")
+            return redirect('courses:course_list')
+    
     is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
+    
+    is_instructor = course.instructor_user == request.user
     
     modules = Module.objects.filter(course=course).prefetch_related('lessons')
     
@@ -59,6 +62,7 @@ def course_detail(request, course_slug):
         'course': course,
         'modules': modules,
         'is_enrolled': is_enrolled,
+        'is_instructor': is_instructor,
         'progress_percentage': progress_percentage,
         'progress_width': progress_width
     }
@@ -69,6 +73,10 @@ def course_detail(request, course_slug):
 def enroll_course(request, course_slug):
     if request.method == 'POST':
         course = get_object_or_404(Course, slug=course_slug)
+        
+        if not course.is_published:
+            messages.error(request, "You cannot enroll in an unpublished course.")
+            return redirect('courses:course_list')
         
         if Enrollment.objects.filter(user=request.user, course=course).exists():
             messages.info(request, f"You are already enrolled in {course.title}")
@@ -84,33 +92,45 @@ def enroll_course(request, course_slug):
 def lesson_detail(request, course_slug, lesson_id):
     course = get_object_or_404(Course, slug=course_slug)
     lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
+    if not course.is_published:
+        if not (request.user.is_staff or 
+                (course.instructor_user and course.instructor_user == request.user)):
+            messages.error(request, "This course is not yet published.")
+            return redirect('courses:course_list')
     
-    try:
-        enrollment = Enrollment.objects.get(user=request.user, course=course)
-    except Enrollment.DoesNotExist:
-        messages.error(request, "You must be enrolled in this course to view lessons")
-        return redirect('courses:course_detail', course_slug=course_slug)
+    is_instructor = course.instructor_user == request.user
     
-    lesson_progress, created = LessonProgress.objects.get_or_create(
-        enrollment=enrollment,
-        lesson=lesson
-    )
-
-    if request.method == 'POST' and 'mark_completed' in request.POST:
-        lesson_progress.completed = True
-        lesson_progress.save()
-        messages.success(request, f"Lesson '{lesson.title}' marked as completed")
+    if not is_instructor:
+        try:
+            enrollment = Enrollment.objects.get(user=request.user, course=course)
+        except Enrollment.DoesNotExist:
+            messages.error(request, "You must be enrolled in this course to view lessons")
+            return redirect('courses:course_detail', course_slug=course_slug)
         
-        total_lessons = Lesson.objects.filter(module__course=course).count()
-        completed_lessons = LessonProgress.objects.filter(
-            enrollment=enrollment, 
-            completed=True
-        ).count()
+        lesson_progress, created = LessonProgress.objects.get_or_create(
+            enrollment=enrollment,
+            lesson=lesson
+        )
         
-        if total_lessons == completed_lessons:
-            enrollment.completed = True
-            enrollment.save()
-            messages.success(request, f"Congratulations! You've completed the course '{course.title}'")
+        if request.method == 'POST' and 'mark_completed' in request.POST:
+            lesson_progress.completed = True
+            lesson_progress.save()
+            messages.success(request, f"Lesson '{lesson.title}' marked as completed")
+            
+            total_lessons = Lesson.objects.filter(module__course=course).count()
+            completed_lessons = LessonProgress.objects.filter(
+                enrollment=enrollment, 
+                completed=True
+            ).count()
+            
+            if total_lessons == completed_lessons:
+                enrollment.completed = True
+                enrollment.save()
+                messages.success(request, f"Congratulations! You've completed the course '{course.title}'")
+        
+        is_completed = lesson_progress.completed
+    else:
+        is_completed = False
     
     module = lesson.module
     lessons_in_module = list(module.lessons.all())
@@ -132,10 +152,11 @@ def lesson_detail(request, course_slug, lesson_id):
     context = {
         'course': course,
         'lesson': lesson,
-        'is_completed': lesson_progress.completed,
+        'is_completed': is_completed,
         'prev_lesson': prev_lesson,
         'next_lesson': next_lesson,
-        'module': module
+        'module': module,
+        'is_instructor': is_instructor
     }
     
     return render(request, 'courses/lesson_detail.html', context)
@@ -162,4 +183,333 @@ def my_courses(request):
     }
     
     return render(request, 'courses/my_courses.html', context)
+
+@login_required
+def instructor_dashboard(request):
+    try:
+        instructor_profile = InstructorProfile.objects.get(user=request.user)
+    except InstructorProfile.DoesNotExist:
+        return redirect('courses:become_instructor')
+    
+    courses = Course.objects.filter(instructor_user=request.user)
+    
+    total_enrollments = Enrollment.objects.filter(course__instructor_user=request.user).count()
+    
+    context = {
+        'instructor_profile': instructor_profile,
+        'courses': courses,
+        'total_enrollments': total_enrollments
+    }
+    
+    return render(request, 'courses/instructor/dashboard.html', context)
+
+@login_required
+def become_instructor(request):
+    if InstructorProfile.objects.filter(user=request.user).exists():
+        return redirect('courses:instructor_dashboard')
+    
+    if request.method == 'POST':
+        form = InstructorProfileForm(request.POST)
+        if form.is_valid():
+            instructor_profile = form.save(commit=False)
+            instructor_profile.user = request.user
+            instructor_profile.save()
+            
+            messages.success(request, "You are now an instructor! You can create and manage courses.")
+            return redirect('courses:instructor_dashboard')
+    else:
+        form = InstructorProfileForm()
+    
+    context = {
+        'form': form
+    }
+    
+    return render(request, 'courses/instructor/become_instructor.html', context)
+
+@login_required
+def instructor_courses(request):
+    if not InstructorProfile.objects.filter(user=request.user).exists():
+        return redirect('courses:become_instructor')
+    
+    courses = Course.objects.filter(instructor_user=request.user)
+    
+    context = {
+        'courses': courses
+    }
+    
+    return render(request, 'courses/instructor/courses.html', context)
+
+@login_required
+def create_course(request):
+    if not InstructorProfile.objects.filter(user=request.user).exists():
+        return redirect('courses:become_instructor')
+    
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            course = form.save(commit=False)
+            course.instructor_user = request.user
+            course.instructor = request.user.get_full_name() or request.user.username
+            course.save()
+            
+            messages.success(request, f"Course '{course.title}' created successfully!")
+            return redirect('courses:edit_course', course_slug=course.slug)
+    else:
+        form = CourseForm()
+    
+    context = {
+        'form': form,
+        'is_new': True
+    }
+    
+    return render(request, 'courses/instructor/edit_course.html', context)
+
+@login_required
+def edit_course(request, course_slug):
+    course = get_object_or_404(Course, slug=course_slug)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to edit this course.")
+    
+    if request.method == 'POST':
+        form = CourseForm(request.POST, instance=course)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Course '{course.title}' updated successfully!")
+            return redirect('courses:instructor_courses')
+    else:
+        form = CourseForm(instance=course)
+    
+    modules = Module.objects.filter(course=course).prefetch_related('lessons')
+    
+    context = {
+        'form': form,
+        'course': course,
+        'modules': modules,
+        'is_new': False
+    }
+    
+    return render(request, 'courses/instructor/edit_course.html', context)
+
+@login_required
+def create_module(request, course_slug):
+    course = get_object_or_404(Course, slug=course_slug)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to edit this course.")
+    
+    if request.method == 'POST':
+        form = ModuleForm(request.POST)
+        if form.is_valid():
+            module = form.save(commit=False)
+            module.course = course
+            
+            last_module = Module.objects.filter(course=course).order_by('-order').first()
+            module.order = (last_module.order + 1) if last_module else 1
+            
+            module.save()
+            
+            messages.success(request, f"Module '{module.title}' created successfully!")
+            return redirect('courses:edit_course', course_slug=course.slug)
+    else:
+        form = ModuleForm()
+    
+    context = {
+        'form': form,
+        'course': course,
+        'is_new': True
+    }
+    
+    return render(request, 'courses/instructor/edit_module.html', context)
+
+@login_required
+def edit_module(request, course_slug, module_id):
+    course = get_object_or_404(Course, slug=course_slug)
+    module = get_object_or_404(Module, id=module_id, course=course)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to edit this course.")
+    
+    if request.method == 'POST':
+        form = ModuleForm(request.POST, instance=module)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Module '{module.title}' updated successfully!")
+            return redirect('courses:edit_course', course_slug=course.slug)
+    else:
+        form = ModuleForm(instance=module)
+    
+    lessons = Lesson.objects.filter(module=module)
+    
+    context = {
+        'form': form,
+        'course': course,
+        'module': module,
+        'lessons': lessons,
+        'is_new': False
+    }
+    
+    return render(request, 'courses/instructor/edit_module.html', context)
+
+@login_required
+def create_lesson(request, course_slug, module_id):
+    course = get_object_or_404(Course, slug=course_slug)
+    module = get_object_or_404(Module, id=module_id, course=course)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to edit this course.")
+    
+    if request.method == 'POST':
+        form = LessonForm(request.POST)
+        if form.is_valid():
+            lesson = form.save(commit=False)
+            lesson.module = module
+            
+            last_lesson = Lesson.objects.filter(module=module).order_by('-order').first()
+            lesson.order = (last_lesson.order + 1) if last_lesson else 1
+            
+            lesson.save()
+            
+            messages.success(request, f"Lesson '{lesson.title}' created successfully!")
+            return redirect('courses:edit_module', course_slug=course.slug, module_id=module.id)
+    else:
+        form = LessonForm()
+    
+    context = {
+        'form': form,
+        'course': course,
+        'module': module,
+        'is_new': True
+    }
+    
+    return render(request, 'courses/instructor/edit_lesson.html', context)
+
+@login_required
+def edit_lesson(request, course_slug, module_id, lesson_id):
+    course = get_object_or_404(Course, slug=course_slug)
+    module = get_object_or_404(Module, id=module_id, course=course)
+    lesson = get_object_or_404(Lesson, id=lesson_id, module=module)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to edit this course.")
+    
+    if request.method == 'POST':
+        form = LessonForm(request.POST, instance=lesson)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Lesson '{lesson.title}' updated successfully!")
+            return redirect('courses:edit_module', course_slug=course.slug, module_id=module.id)
+    else:
+        form = LessonForm(instance=lesson)
+    
+    context = {
+        'form': form,
+        'course': course,
+        'module': module,
+        'lesson': lesson,
+        'is_new': False
+    }
+    
+    return render(request, 'courses/instructor/edit_lesson.html', context)
+
+@login_required
+def delete_course(request, course_slug):
+    course = get_object_or_404(Course, slug=course_slug)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to delete this course.")
+    
+    if request.method == 'POST':
+        course_title = course.title
+        course.delete()
+        messages.success(request, f"Course '{course_title}' deleted successfully!")
+        return redirect('courses:instructor_courses')
+    
+    context = {
+        'course': course
+    }
+    
+    return render(request, 'courses/instructor/delete_course.html', context)
+
+@login_required
+def delete_module(request, course_slug, module_id):
+    course = get_object_or_404(Course, slug=course_slug)
+    module = get_object_or_404(Module, id=module_id, course=course)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to delete this module.")
+    
+    if request.method == 'POST':
+        module_title = module.title
+        module.delete()
+        messages.success(request, f"Module '{module_title}' deleted successfully!")
+        return redirect('courses:edit_course', course_slug=course.slug)
+    
+    context = {
+        'course': course,
+        'module': module
+    }
+    
+    return render(request, 'courses/instructor/delete_module.html', context)
+
+@login_required
+def delete_lesson(request, course_slug, module_id, lesson_id):
+    course = get_object_or_404(Course, slug=course_slug)
+    module = get_object_or_404(Module, id=module_id, course=course)
+    lesson = get_object_or_404(Lesson, id=lesson_id, module=module)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to delete this lesson.")
+    
+    if request.method == 'POST':
+        lesson_title = lesson.title
+        lesson.delete()
+        messages.success(request, f"Lesson '{lesson_title}' deleted successfully!")
+        return redirect('courses:edit_module', course_slug=course.slug, module_id=module.id)
+    
+    context = {
+        'course': course,
+        'module': module,
+        'lesson': lesson
+    }
+    
+    return render(request, 'courses/instructor/delete_lesson.html', context)
+
+@login_required
+def publish_course(request, course_slug):
+    course = get_object_or_404(Course, slug=course_slug)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to publish this course.")
+    
+    if request.method == 'POST':
+        course.is_published = True
+        course.save()
+        messages.success(request, f"Course '{course.title}' published successfully!")
+        return redirect('courses:instructor_courses')
+    
+    context = {
+        'course': course
+    }
+    
+    return render(request, 'courses/instructor/publish_course.html', context)
+
+@login_required
+def unpublish_course(request, course_slug):
+    course = get_object_or_404(Course, slug=course_slug)
+    
+    if course.instructor_user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You don't have permission to unpublish this course.")
+    
+    if request.method == 'POST':
+        course.is_published = False
+        course.save()
+        messages.success(request, f"Course '{course.title}' unpublished successfully!")
+        return redirect('courses:instructor_courses')
+    
+    context = {
+        'course': course
+    }
+    
+    return render(request, 'courses/instructor/unpublish_course.html', context)
 
