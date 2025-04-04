@@ -20,7 +20,7 @@ unpublish_courses.short_description = "Unpublish selected courses"
 
 @admin.register(InstructorProfile)
 class InstructorProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'expertise', 'courses_count')
+    list_display = ('user', 'full_name', 'expertise')
     search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name', 'expertise')
     raw_id_fields = ('user',)
 

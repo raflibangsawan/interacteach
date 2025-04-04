@@ -16,10 +16,6 @@ class InstructorProfile(models.Model):
     @property
     def full_name(self):
         return self.user.get_full_name() or self.user.username
-    
-    @property
-    def courses_count(self):
-        return self.courses.count()
 
 class Course(models.Model):
     title = models.CharField(max_length=200)

@@ -10,38 +10,54 @@ from .forms import CourseForm, ModuleForm, LessonForm, InstructorProfileForm
 
 @login_required
 def course_list(request):
+    # Get filter parameters
     search_query = request.GET.get('search', '')
     
+    # Start with all published courses
     courses = Course.objects.filter(is_published=True)
     
+    # Apply search filter if provided
     if search_query:
         courses = courses.filter(
             Q(title__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
+    
+    # Check if user is an instructor
+    is_instructor = False
+    if request.user.is_authenticated:
+        is_instructor = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'courses': courses,
-        'search_query': search_query
+        'search_query': search_query,
+        'is_instructor': is_instructor,
     }
     
     return render(request, 'courses/course_list.html', context)
 
 @login_required
 def course_detail(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # If course is not published, only allow instructor or admin to view it
     if not course.is_published:
         if not (request.user.is_staff or 
                 (course.instructor_user and course.instructor_user == request.user)):
             messages.error(request, "This course is not yet published.")
             return redirect('courses:course_list')
     
+    # Check if the user is enrolled
     is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
     
+    # Check if the user is the instructor
     is_instructor = course.instructor_user == request.user
     
+    # Get all modules and lessons for the course
     modules = Module.objects.filter(course=course).prefetch_related('lessons')
     
+    # Calculate course progress if enrolled
     progress_percentage = 0
     progress_width = "0%"
     
@@ -58,13 +74,19 @@ def course_detail(request, course_slug):
             progress_percentage = (completed_lessons / total_lessons) * 100
             progress_width = f"{int(progress_percentage)}%"
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'course': course,
         'modules': modules,
         'is_enrolled': is_enrolled,
         'is_instructor': is_instructor,
         'progress_percentage': progress_percentage,
-        'progress_width': progress_width
+        'progress_width': progress_width,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/course_detail.html', context)
@@ -74,13 +96,16 @@ def enroll_course(request, course_slug):
     if request.method == 'POST':
         course = get_object_or_404(Course, slug=course_slug)
         
+        # Only allow enrollment in published courses
         if not course.is_published:
             messages.error(request, "You cannot enroll in an unpublished course.")
             return redirect('courses:course_list')
         
+        # Check if already enrolled
         if Enrollment.objects.filter(user=request.user, course=course).exists():
             messages.info(request, f"You are already enrolled in {course.title}")
         else:
+            # Create enrollment
             enrollment = Enrollment.objects.create(user=request.user, course=course)
             messages.success(request, f"Successfully enrolled in {course.title}")
         
@@ -90,14 +115,18 @@ def enroll_course(request, course_slug):
 
 @login_required
 def lesson_detail(request, course_slug, lesson_id):
+    # Get the course and lesson or return 404
     course = get_object_or_404(Course, slug=course_slug)
     lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
+    
+    # If course is not published, only allow instructor or admin to view it
     if not course.is_published:
         if not (request.user.is_staff or 
                 (course.instructor_user and course.instructor_user == request.user)):
             messages.error(request, "This course is not yet published.")
             return redirect('courses:course_list')
     
+    # Check if the user is enrolled or is the instructor
     is_instructor = course.instructor_user == request.user
     
     if not is_instructor:
@@ -107,16 +136,19 @@ def lesson_detail(request, course_slug, lesson_id):
             messages.error(request, "You must be enrolled in this course to view lessons")
             return redirect('courses:course_detail', course_slug=course_slug)
         
+        # Get or create lesson progress
         lesson_progress, created = LessonProgress.objects.get_or_create(
             enrollment=enrollment,
             lesson=lesson
         )
         
+        # Mark as completed if requested
         if request.method == 'POST' and 'mark_completed' in request.POST:
             lesson_progress.completed = True
             lesson_progress.save()
             messages.success(request, f"Lesson '{lesson.title}' marked as completed")
             
+            # Check if all lessons are completed to mark the course as completed
             total_lessons = Lesson.objects.filter(module__course=course).count()
             completed_lessons = LessonProgress.objects.filter(
                 enrollment=enrollment, 
@@ -130,8 +162,10 @@ def lesson_detail(request, course_slug, lesson_id):
         
         is_completed = lesson_progress.completed
     else:
+        # Instructor doesn't need to track progress
         is_completed = False
     
+    # Get the next and previous lessons for navigation
     module = lesson.module
     lessons_in_module = list(module.lessons.all())
     current_index = lessons_in_module.index(lesson)
@@ -139,6 +173,7 @@ def lesson_detail(request, course_slug, lesson_id):
     prev_lesson = lessons_in_module[current_index - 1] if current_index > 0 else None
     next_lesson = lessons_in_module[current_index + 1] if current_index < len(lessons_in_module) - 1 else None
     
+    # If no next lesson in current module, check if there's another module
     if not next_lesson:
         modules = list(Module.objects.filter(course=course))
         current_module_index = modules.index(module)
@@ -149,6 +184,11 @@ def lesson_detail(request, course_slug, lesson_id):
             if next_module_first_lesson:
                 next_lesson = next_module_first_lesson
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'course': course,
         'lesson': lesson,
@@ -156,15 +196,18 @@ def lesson_detail(request, course_slug, lesson_id):
         'prev_lesson': prev_lesson,
         'next_lesson': next_lesson,
         'module': module,
-        'is_instructor': is_instructor
+        'is_instructor': is_instructor,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/lesson_detail.html', context)
 
 @login_required
 def my_courses(request):
+    # Get all courses the user is enrolled in
     enrollments = Enrollment.objects.filter(user=request.user).select_related('course')
     
+    # Calculate progress for each enrollment
     for enrollment in enrollments:
         total_lessons = Lesson.objects.filter(module__course=enrollment.course).count()
         if total_lessons > 0:
@@ -178,39 +221,58 @@ def my_courses(request):
             enrollment.progress_percentage = 0
             enrollment.progress_width = "0%"
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'enrollments': enrollments
+        'enrollments': enrollments,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/my_courses.html', context)
 
+# Instructor views
 @login_required
 def instructor_dashboard(request):
+    # Check if user is an instructor
     try:
         instructor_profile = InstructorProfile.objects.get(user=request.user)
     except InstructorProfile.DoesNotExist:
+        # If not an instructor, redirect to become instructor page
         return redirect('courses:become_instructor')
     
+    # Get all courses created by this instructor
     courses = Course.objects.filter(instructor_user=request.user)
     
+    # Get enrollment statistics
     total_enrollments = Enrollment.objects.filter(course__instructor_user=request.user).count()
+    
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
     
     context = {
         'instructor_profile': instructor_profile,
         'courses': courses,
-        'total_enrollments': total_enrollments
+        'total_enrollments': total_enrollments,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/dashboard.html', context)
 
 @login_required
 def become_instructor(request):
+    # Check if user is already an instructor
     if InstructorProfile.objects.filter(user=request.user).exists():
         return redirect('courses:instructor_dashboard')
     
     if request.method == 'POST':
         form = InstructorProfileForm(request.POST)
         if form.is_valid():
+            # Create instructor profile
             instructor_profile = form.save(commit=False)
             instructor_profile.user = request.user
             instructor_profile.save()
@@ -220,27 +282,42 @@ def become_instructor(request):
     else:
         form = InstructorProfileForm()
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'form': form
+        'form': form,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/become_instructor.html', context)
 
 @login_required
 def instructor_courses(request):
+    # Check if user is an instructor
     if not InstructorProfile.objects.filter(user=request.user).exists():
         return redirect('courses:become_instructor')
     
+    # Get all courses created by this instructor
     courses = Course.objects.filter(instructor_user=request.user)
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'courses': courses
+        'courses': courses,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/courses.html', context)
 
 @login_required
 def create_course(request):
+    # Check if user is an instructor
     if not InstructorProfile.objects.filter(user=request.user).exists():
         return redirect('courses:become_instructor')
     
@@ -257,17 +334,25 @@ def create_course(request):
     else:
         form = CourseForm()
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'form': form,
-        'is_new': True
+        'is_new': True,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_course.html', context)
 
 @login_required
 def edit_course(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to edit this course.")
     
@@ -280,21 +365,30 @@ def edit_course(request, course_slug):
     else:
         form = CourseForm(instance=course)
     
+    # Get all modules for this course
     modules = Module.objects.filter(course=course).prefetch_related('lessons')
+    
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
     
     context = {
         'form': form,
         'course': course,
         'modules': modules,
-        'is_new': False
+        'is_new': False,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_course.html', context)
 
 @login_required
 def create_module(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to edit this course.")
     
@@ -304,6 +398,7 @@ def create_module(request, course_slug):
             module = form.save(commit=False)
             module.course = course
             
+            # Set order to be the next available number
             last_module = Module.objects.filter(course=course).order_by('-order').first()
             module.order = (last_module.order + 1) if last_module else 1
             
@@ -314,19 +409,27 @@ def create_module(request, course_slug):
     else:
         form = ModuleForm()
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'form': form,
         'course': course,
-        'is_new': True
+        'is_new': True,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_module.html', context)
 
 @login_required
 def edit_module(request, course_slug, module_id):
+    # Get the course and module or return 404
     course = get_object_or_404(Course, slug=course_slug)
     module = get_object_or_404(Module, id=module_id, course=course)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to edit this course.")
     
@@ -339,23 +442,32 @@ def edit_module(request, course_slug, module_id):
     else:
         form = ModuleForm(instance=module)
     
+    # Get all lessons for this module
     lessons = Lesson.objects.filter(module=module)
+    
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
     
     context = {
         'form': form,
         'course': course,
         'module': module,
         'lessons': lessons,
-        'is_new': False
+        'is_new': False,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_module.html', context)
 
 @login_required
 def create_lesson(request, course_slug, module_id):
+    # Get the course and module or return 404
     course = get_object_or_404(Course, slug=course_slug)
     module = get_object_or_404(Module, id=module_id, course=course)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to edit this course.")
     
@@ -365,6 +477,7 @@ def create_lesson(request, course_slug, module_id):
             lesson = form.save(commit=False)
             lesson.module = module
             
+            # Set order to be the next available number
             last_lesson = Lesson.objects.filter(module=module).order_by('-order').first()
             lesson.order = (last_lesson.order + 1) if last_lesson else 1
             
@@ -375,21 +488,29 @@ def create_lesson(request, course_slug, module_id):
     else:
         form = LessonForm()
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'form': form,
         'course': course,
         'module': module,
-        'is_new': True
+        'is_new': True,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_lesson.html', context)
 
 @login_required
 def edit_lesson(request, course_slug, module_id, lesson_id):
+    # Get the course, module, and lesson or return 404
     course = get_object_or_404(Course, slug=course_slug)
     module = get_object_or_404(Module, id=module_id, course=course)
     lesson = get_object_or_404(Lesson, id=lesson_id, module=module)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to edit this course.")
     
@@ -402,20 +523,28 @@ def edit_lesson(request, course_slug, module_id, lesson_id):
     else:
         form = LessonForm(instance=lesson)
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'form': form,
         'course': course,
         'module': module,
         'lesson': lesson,
-        'is_new': False
+        'is_new': False,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/edit_lesson.html', context)
 
 @login_required
 def delete_course(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to delete this course.")
     
@@ -425,17 +554,25 @@ def delete_course(request, course_slug):
         messages.success(request, f"Course '{course_title}' deleted successfully!")
         return redirect('courses:instructor_courses')
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'course': course
+        'course': course,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/delete_course.html', context)
 
 @login_required
 def delete_module(request, course_slug, module_id):
+    # Get the course and module or return 404
     course = get_object_or_404(Course, slug=course_slug)
     module = get_object_or_404(Module, id=module_id, course=course)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to delete this module.")
     
@@ -445,19 +582,27 @@ def delete_module(request, course_slug, module_id):
         messages.success(request, f"Module '{module_title}' deleted successfully!")
         return redirect('courses:edit_course', course_slug=course.slug)
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'course': course,
-        'module': module
+        'module': module,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/delete_module.html', context)
 
 @login_required
 def delete_lesson(request, course_slug, module_id, lesson_id):
+    # Get the course, module, and lesson or return 404
     course = get_object_or_404(Course, slug=course_slug)
     module = get_object_or_404(Module, id=module_id, course=course)
     lesson = get_object_or_404(Lesson, id=lesson_id, module=module)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to delete this lesson.")
     
@@ -467,18 +612,26 @@ def delete_lesson(request, course_slug, module_id, lesson_id):
         messages.success(request, f"Lesson '{lesson_title}' deleted successfully!")
         return redirect('courses:edit_module', course_slug=course.slug, module_id=module.id)
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
         'course': course,
         'module': module,
-        'lesson': lesson
+        'lesson': lesson,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/delete_lesson.html', context)
 
 @login_required
 def publish_course(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to publish this course.")
     
@@ -488,16 +641,24 @@ def publish_course(request, course_slug):
         messages.success(request, f"Course '{course.title}' published successfully!")
         return redirect('courses:instructor_courses')
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'course': course
+        'course': course,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/publish_course.html', context)
 
 @login_required
 def unpublish_course(request, course_slug):
+    # Get the course or return 404
     course = get_object_or_404(Course, slug=course_slug)
     
+    # Check if user is the instructor of this course
     if course.instructor_user != request.user and not request.user.is_staff:
         return HttpResponseForbidden("You don't have permission to unpublish this course.")
     
@@ -507,8 +668,14 @@ def unpublish_course(request, course_slug):
         messages.success(request, f"Course '{course.title}' unpublished successfully!")
         return redirect('courses:instructor_courses')
     
+    # Check if user is an instructor
+    is_instructor_profile = False
+    if request.user.is_authenticated:
+        is_instructor_profile = hasattr(request.user, 'instructor_profile')
+    
     context = {
-        'course': course
+        'course': course,
+        'is_instructor_profile': is_instructor_profile,
     }
     
     return render(request, 'courses/instructor/unpublish_course.html', context)

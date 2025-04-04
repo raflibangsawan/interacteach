@@ -21,10 +21,24 @@
                         <li class="nav-item"><a href="{% url 'courses:course_list' %}" class="nav-link">Courses</a></li>
                         {% if user.is_authenticated %}
                             <li class="nav-item"><a href="{% url 'courses:my_courses' %}" class="nav-link">My Learning</a></li>
+                                                        
+                            {% if is_instructor %}
+                                <li class="nav-item dropdown">
+                                    <a href="#" class="nav-link dropdown-toggle">Instructor</a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="{% url 'courses:instructor_dashboard' %}">Dashboard</a></li>
+                                        <li><a href="{% url 'courses:instructor_courses' %}">My Courses</a></li>
+                                        <li><a href="{% url 'courses:create_course' %}">Create Course</a></li>
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li class="nav-item"><a href="{% url 'courses:become_instructor' %}" class="nav-link">Become Instructor</a></li>
+                            {% endif %}
+                            
                             <li class="nav-item">
                                 <form method="post" action="{% url 'logout' %}" class="logout-form">
                                     {% csrf_token %}
-                                    <button type="submit" class="nav-link">Logout</button>
+                                    <button type="submit" class="nav-link logout-button">Logout</button>
                                 </form>
                             </li>
                         {% else %}

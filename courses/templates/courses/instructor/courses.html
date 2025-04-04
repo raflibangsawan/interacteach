@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Courses{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/instructor.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">My Courses</h1>
+    <p class="page-subtitle">Manage your created courses</p>
+</div>
+
+<div class="dashboard-actions">
+    <a href="{% url 'courses:create_course' %}" class="btn btn-primary">Create New Course</a>
+    <a href="{% url 'courses:instructor_dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+
+{% if courses %}
+    <div class="instructor-courses-list">
+        {% for course in courses %}
+            <div class="instructor-course-item">
+                <div class="instructor-course-image">
+                    <img src="{{ course.image }}" alt="{{ course.title }}">
+                </div>
+                <div class="instructor-course-details">
+                    <div class="instructor-course-header">
+                        <div>
+                            <h3 class="instructor-course-title">{{ course.title }}</h3>
+                            <div class="instructor-course-meta">
+                                <span>{{ course.duration }}</span>
+                                <span>{{ course.enrollments.count }} students enrolled</span>
+                                <span>{{ course.modules.count }} modules</span>
+                            </div>
+                        </div>
+                        <span class="instructor-course-status {% if course.is_published %}published{% else %}draft{% endif %}">
+                            {% if course.is_published %}Published{% else %}Draft{% endif %}
+                        </span>
+                    </div>
+                    
+                    <p class="instructor-course-description">{{ course.description|truncatechars:200 }}</p>
+                    
+                    <div class="instructor-course-actions">
+                        <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-primary">Edit Course</a>
+                        <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="btn btn-secondary">View Course</a>
+                        {% if course.is_published %}
+                            <a href="{% url 'courses:unpublish_course' course_slug=course.slug %}" class="btn btn-warning">Unpublish</a>
+                        {% else %}
+                            <a href="{% url 'courses:publish_course' course_slug=course.slug %}" class="btn btn-success">Publish</a>
+                        {% endif %}
+                        <a href="{% url 'courses:delete_course' course_slug=course.slug %}" class="btn btn-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <h2>You haven't created any courses yet</h2>
+        <p>Get started by creating your first course!</p>
+        <a href="{% url 'courses:create_course' %}" class="btn btn-primary">Create Course</a>
+    </div>
+{% endif %}
+{% endblock %}
+
