@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 def create_superuser():
     username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
     email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
-    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin')
     
     if not password:
         print("Error: DJANGO_SUPERUSER_PASSWORD environment variable not set")
