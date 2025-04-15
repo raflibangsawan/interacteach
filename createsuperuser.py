@@ -4,11 +4,23 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'interacteach.settings')
 django.setup()
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 
-User = get_user_model()
-if not User.objects.filter(username="admin").exists():
-    User.objects.create_superuser("admin", "admin@example.com", "password123")
-    print("Superuser created.")
-else:
-    print("Superuser already exists.")
+def create_superuser():
+    username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+    email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
+    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+    
+    if not password:
+        print("Error: DJANGO_SUPERUSER_PASSWORD environment variable not set")
+        return
+    
+    if User.objects.filter(username=username).exists():
+        print(f"Superuser '{username}' already exists")
+        return
+    
+    User.objects.create_superuser(username=username, email=email, password=password)
+    print(f"Superuser '{username}' created successfully")
+
+if __name__ == "__main__":
+    create_superuser()
