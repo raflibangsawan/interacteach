@@ -1,0 +1,127 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}Edit{% else %}Create{% endif %} Question | {{ quiz.title }}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'courses:quiz_detail_instructor' course_slug=course.slug module_id=module.id %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Quiz
+        </a>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-6">
+            {% if is_edit %}Edit Question{% else %}Create New Question{% endif %}
+        </h1>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            {% if formset.non_form_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ formset.non_form_errors }}
+            </div>
+            {% endif %}
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="{{ form.text.id_for_label }}" class="block text-sm font-medium text-gray-700">Question Text</label>
+                    {{ form.text }}
+                    {% if form.text.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.text.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.points.id_for_label }}" class="block text-sm font-medium text-gray-700">Points</label>
+                        {{ form.points }}
+                        {% if form.points.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.points.errors }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.order.id_for_label }}" class="block text-sm font-medium text-gray-700">Order</label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.order.errors }}</p>
+                        {% endif %}
+                        <p class="text-gray-500 text-xs mt-1">Leave at 0 for automatic ordering.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6">
+                <h2 class="text-lg font-semibold mb-4">Answer Choices (Select exactly one correct answer)</h2>
+                
+                {{ formset.management_form }}
+                
+                <div class="space-y-4">
+                    {% for choice_form in formset %}
+                    <div class="border rounded-lg p-4 {% if forloop.counter == 1 %}bg-blue-50{% endif %}">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-medium">Choice {{ forloop.counter }}</h3>
+                            <div class="flex items-center">
+                                {{ choice_form.is_correct }}
+                                <label for="{{ choice_form.is_correct.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                                    Correct Answer
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="md:col-span-3">
+                                <label for="{{ choice_form.text.id_for_label }}" class="block text-sm font-medium text-gray-700">Text</label>
+                                {{ choice_form.text }}
+                                {% if choice_form.text.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ choice_form.text.errors }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ choice_form.order.id_for_label }}" class="block text-sm font-medium text-gray-700">Order</label>
+                                {{ choice_form.order }}
+                                {% if choice_form.order.errors %}
+                                <p class="text-red-500 text-xs mt-1">{{ choice_form.order.errors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% for hidden in choice_form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="flex justify-between pt-4">
+                <a href="{% url 'courses:quiz_detail_instructor' course_slug=course.slug module_id=module.id %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                    Cancel
+                </a>
+                <div class="space-x-2">
+                    {% if not is_edit %}
+                    <button type="submit" name="add_another" value="true" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Save & Add Another
+                    </button>
+                    {% endif %}
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        {% if is_edit %}Save Changes{% else %}Save Question{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

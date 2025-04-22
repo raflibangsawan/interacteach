@@ -314,6 +314,34 @@
   text-align: center;
 }
 
+/* Quiz related styles */
+.module-quiz {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.quiz-link-container {
+  display: flex;
+  align-items: center;
+}
+
+.quiz-icon {
+  color: #0066cc;
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+.quiz-link {
+  color: #0066cc;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.quiz-link:hover {
+  text-decoration: underline;
+}
+
 /* Enhanced Enrollment Card */
 .enrollment-card,
 .course-info-card {
@@ -525,4 +553,3 @@
     font-size: 16px;
   }
 }
-

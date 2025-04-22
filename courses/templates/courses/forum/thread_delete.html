@@ -1,0 +1,39 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Delete Thread - Forum{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/forum.css">
+{% endblock %}
+
+{% block content %}
+<div class="forum-container">
+    <div class="forum-breadcrumb">
+        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
+        <span class="separator">/</span>
+        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}">Forum</a>
+        <span class="separator">/</span>
+        <a href="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}">{{ thread.title }}</a>
+        <span class="separator">/</span>
+        <span>Delete</span>
+    </div>
+
+    <div class="delete-confirmation">
+        <h1 class="page-title">Delete Thread</h1>
+        
+        <div class="confirmation-message">
+            <p>Are you sure you want to delete the thread "{{ thread.title }}"?</p>
+            <p class="warning">This action cannot be undone. All replies to this thread will also be deleted.</p>
+        </div>
+        
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            
+            <div class="form-actions">
+                <button type="submit" class="delete-button">Delete Thread</button>
+                <a href="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

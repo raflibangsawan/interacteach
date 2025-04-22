@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}
+    Taking: {{ quiz.title }} | {{ course.title }}
+{% endblock %}
+
+{% block extra_head %}
+{% if quiz.time_limit > 0 %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set the time limit in seconds
+        let timeLimit = {{ quiz.time_limit }} * 60;
+        let timerElement = document.getElementById('timer');
+        let quizForm = document.getElementById('quiz-form');
+        
+        function updateTimer() {
+            let minutes = Math.floor(timeLimit / 60);
+            let seconds = timeLimit % 60;
+            
+            // Format the time display
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update the timer color as time runs out
+            if (timeLimit <= 60) {
+                timerElement.classList.add('text-red-600');
+                timerElement.classList.add('font-bold');
+            }
+            
+            // Decrement the timer
+            timeLimit--;
+            
+            // Auto-submit when time runs out
+            if (timeLimit < 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Your quiz will be submitted automatically.');
+                quizForm.submit();
+            }
+        }
+        
+        // Update the timer every second
+        updateTimer();
+        let timerInterval = setInterval(updateTimer, 1000);
+    });
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">{{ quiz.title }}</h1>
+            {% if quiz.time_limit > 0 %}
+            <div class="bg-gray-100 px-4 py-2 rounded-lg">
+                <span class="text-gray-700 mr-2">Time Remaining:</span>
+                <span id="timer" class="font-mono text-lg">00:00</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <form id="quiz-form" method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            {% for field in form %}
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-lg mb-3">{{ forloop.counter }}. {{ field.label }}</h3>
+                
+                <div class="space-y-2">
+                    {% for choice in field %}
+                    <div class="flex items-start">
+                        {{ choice.tag }}
+                        <label for="{{ choice.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                            {{ choice.choice_label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if field.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="flex justify-between pt-6">
+                <a href="{% url 'courses:quiz_detail_student' course_slug=course.slug module_id=module.id %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Submit Quiz
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

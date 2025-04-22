@@ -1,0 +1,48 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if is_edit %}Edit Thread{% else %}Create Thread{% endif %} - Forum{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/forum.css">
+{% endblock %}
+
+{% block content %}
+<div class="forum-container">
+    <div class="forum-breadcrumb">
+        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
+        <span class="separator">/</span>
+        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}">Forum</a>
+        <span class="separator">/</span>
+        <span>{% if is_edit %}Edit Thread{% else %}Create Thread{% endif %}</span>
+    </div>
+
+    <div class="thread-form-section">
+        <h1 class="page-title">{% if is_edit %}Edit Thread{% else %}Create New Thread{% endif %}</h1>
+        
+        <form method="post" class="thread-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}" class="form-label">Thread Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <div class="form-error">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}" class="form-label">Content</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                    <div class="form-error">{{ form.content.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-button">{% if is_edit %}Update Thread{% else %}Create Thread{% endif %}</button>
+                <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}" class="cancel-button">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

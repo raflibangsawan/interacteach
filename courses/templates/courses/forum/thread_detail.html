@@ -1,0 +1,127 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ thread.title }} - Forum{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/forum.css">
+{% endblock %}
+
+{% block content %}
+<div class="forum-container">
+    <div class="forum-breadcrumb">
+        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
+        <span class="separator">/</span>
+        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}">Forum</a>
+        <span class="separator">/</span>
+        <span>Thread</span>
+    </div>
+
+    <div class="thread-detail">
+        <div class="thread-header">
+            <h1 class="thread-title">{{ thread.title }}</h1>
+            
+            <div class="thread-meta">
+                <span class="thread-author">Started by {{ thread.user.get_full_name|default:thread.user.username }}</span>
+                <span class="thread-date">{{ thread.created_at|date:"F j, Y, g:i a" }}</span>
+                
+                {% if thread.is_pinned %}
+                    <span class="thread-status pinned">Pinned</span>
+                {% endif %}
+                
+                {% if thread.is_locked %}
+                    <span class="thread-status locked">Locked</span>
+                {% endif %}
+            </div>
+            
+            <div class="thread-actions">
+                {% if thread.user == request.user or is_instructor or request.user.is_staff %}
+                    <a href="{% url 'courses:forum_thread_edit' course_slug=course.slug thread_id=thread.id %}" class="action-button edit">Edit</a>
+                    <a href="{% url 'courses:forum_thread_delete' course_slug=course.slug thread_id=thread.id %}" class="action-button delete">Delete</a>
+                {% endif %}
+                
+                {% if is_instructor or request.user.is_staff %}
+                    <a href="{% url 'courses:forum_thread_pin' course_slug=course.slug thread_id=thread.id %}" class="action-button pin">
+                        {% if thread.is_pinned %}Unpin{% else %}Pin{% endif %}
+                    </a>
+                    <a href="{% url 'courses:forum_thread_lock' course_slug=course.slug thread_id=thread.id %}" class="action-button lock">
+                        {% if thread.is_locked %}Unlock{% else %}Lock{% endif %}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="thread-content">
+            {{ thread.content|linebreaks }}
+        </div>
+    </div>
+
+    <div class="replies-section">
+        <h2 class="replies-title">Replies ({{ replies.count }})</h2>
+        
+        {% if replies %}
+            <div class="reply-list">
+                {% for reply in replies %}
+                    <div class="reply-item {% if reply.is_solution %}solution{% endif %}">
+                        <div class="reply-header">
+                            <div class="reply-meta">
+                                <span class="reply-author">{{ reply.user.get_full_name|default:reply.user.username }}</span>
+                                <span class="reply-date">{{ reply.created_at|date:"F j, Y, g:i a" }}</span>
+                                
+                                {% if reply.is_solution %}
+                                    <span class="reply-status solution">Solution</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="reply-actions">
+                                {% if reply.user == request.user or is_instructor or request.user.is_staff %}
+                                    <a href="{% url 'courses:forum_reply_edit' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button edit">Edit</a>
+                                    <a href="{% url 'courses:forum_reply_delete' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button delete">Delete</a>
+                                {% endif %}
+                                
+                                {% if thread.user == request.user or is_instructor or request.user.is_staff %}
+                                    <a href="{% url 'courses:forum_reply_mark_solution' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button solution">
+                                        {% if reply.is_solution %}Unmark Solution{% else %}Mark as Solution{% endif %}
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="reply-content">
+                            {{ reply.content|linebreaks }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-replies">
+                <p>No replies yet. Be the first to respond!</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not thread.is_locked %}
+        <div class="reply-form-section">
+            <h3 class="reply-form-title">Post a Reply</h3>
+            
+            <form method="post" class="reply-form">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                        <div class="form-error">{{ form.content.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="submit-button">Post Reply</button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <div class="thread-locked-message">
+            <p>This thread is locked. New replies are not allowed.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Forum - {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/courses/css/forum.css">
+{% endblock %}
+
+{% block content %}
+<div class="forum-container">
+    <div class="forum-header">
+        <div class="forum-breadcrumb">
+            <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
+            <span class="separator">/</span>
+            <span>Forum</span>
+        </div>
+        <h1 class="forum-title">Course Forum</h1>
+        <p class="forum-description">Discuss topics related to this course with fellow students and instructors</p>
+    </div>
+
+    <div class="forum-actions">
+        <div class="forum-search">
+            <form method="get" class="search-form">
+                <input type="text" name="search" placeholder="Search threads..." value="{{ search_query }}" class="search-input">
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
+        <div class="forum-filters">
+            <label for="sort-select">Sort by:</label>
+            <select id="sort-select" class="sort-select" onchange="this.form.submit()">
+                <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                <option value="activity" {% if sort_by == 'activity' %}selected{% endif %}>Latest Activity</option>
+                <option value="replies" {% if sort_by == 'replies' %}selected{% endif %}>Most Replies</option>
+            </select>
+        </div>
+        <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="create-thread-button">Create Thread</a>
+    </div>
+
+    <div class="thread-list">
+        {% if threads %}
+            {% for thread in threads %}
+                <div class="thread-item {% if thread.is_pinned %}pinned{% endif %} {% if thread.is_locked %}locked{% endif %}">
+                    <div class="thread-status">
+                        {% if thread.is_pinned %}
+                            <span class="status-icon pinned" title="Pinned Thread">📌</span>
+                        {% endif %}
+                        {% if thread.is_locked %}
+                            <span class="status-icon locked" title="Locked Thread">🔒</span>
+                        {% endif %}
+                    </div>
+                    <div class="thread-content">
+                        <h3 class="thread-title">
+                            <a href="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}">{{ thread.title }}</a>
+                        </h3>
+                        <div class="thread-meta">
+                            <span class="thread-author">
+                                Started by {{ thread.user.get_full_name|default:thread.user.username }}
+                            </span>
+                            <span class="thread-date">{{ thread.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <div class="replies-count">
+                            <span class="count">{{ thread.reply_count }}</span>
+                            <span class="label">Replies</span>
+                        </div>
+                    </div>
+                    <div class="thread-activity">
+                        {% if thread.last_reply %}
+                            <div class="last-reply">
+                                <span class="reply-author">{{ thread.last_reply.user.get_full_name|default:thread.last_reply.user.username }}</span>
+                                <span class="reply-date">{{ thread.last_reply.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        {% else %}
+                            <div class="no-replies">
+                                <span>No replies yet</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>No threads found. Be the first to start a discussion!</p>
+                <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="create-thread-button">Create Thread</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

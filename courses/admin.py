@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Course, Module, Lesson, Enrollment, LessonProgress, InstructorProfile
+from .models import (
+    Course, Module, Lesson, Enrollment, LessonProgress, InstructorProfile, 
+    ForumThread, ForumReply, Quiz, Question, Choice, QuizAttempt, QuizResponse
+)
 
 # Custom admin actions
 def mark_as_completed(modeladmin, request, queryset):
@@ -17,12 +20,6 @@ publish_courses.short_description = "Publish selected courses"
 def unpublish_courses(modeladmin, request, queryset):
     queryset.update(is_published=False)
 unpublish_courses.short_description = "Unpublish selected courses"
-
-@admin.register(InstructorProfile)
-class InstructorProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'expertise')
-    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name', 'expertise')
-    raw_id_fields = ('user',)
 
 class ModuleInline(admin.StackedInline):
     model = Module
@@ -57,7 +54,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'course', 'order', 'total_lessons')
+    list_display = ('title', 'course', 'order', 'total_lessons', 'has_quiz')
     list_filter = ('course',)
     search_fields = ('title', 'description')
     inlines = [LessonInline]
@@ -66,6 +63,11 @@ class ModuleAdmin(admin.ModelAdmin):
     def total_lessons(self, obj):
         return obj.total_lessons()
     total_lessons.short_description = 'Lessons'
+    
+    def has_quiz(self, obj):
+        return hasattr(obj, 'quiz')
+    has_quiz.boolean = True
+    has_quiz.short_description = 'Has Quiz'
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
@@ -100,3 +102,100 @@ class LessonProgressAdmin(admin.ModelAdmin):
     date_hierarchy = 'last_accessed'
     actions = [mark_as_completed, mark_as_not_completed]
 
+@admin.register(InstructorProfile)
+class InstructorProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'expertise', 'courses_count')
+    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name', 'expertise')
+    raw_id_fields = ('user',)
+
+# Forum admin
+class ForumReplyInline(admin.TabularInline):
+    model = ForumReply
+    extra = 1
+    readonly_fields = ('created_at',)
+
+@admin.register(ForumThread)
+class ForumThreadAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'user', 'created_at', 'is_pinned', 'is_locked', 'replies_count')
+    list_filter = ('is_pinned', 'is_locked', 'created_at', 'course')
+    search_fields = ('title', 'content', 'user__username')
+    date_hierarchy = 'created_at'
+    inlines = [ForumReplyInline]
+    
+    def replies_count(self, obj):
+        return obj.replies.count()
+    replies_count.short_description = 'Replies'
+
+@admin.register(ForumReply)
+class ForumReplyAdmin(admin.ModelAdmin):
+    list_display = ('thread', 'user', 'created_at', 'is_solution')
+    list_filter = ('is_solution', 'created_at')
+    search_fields = ('content', 'user__username', 'thread__title')
+    date_hierarchy = 'created_at'
+
+# Quiz admin
+class ChoiceInline(admin.TabularInline):
+    model = Choice
+    extra = 4
+    max_num = 4
+
+class QuestionInline(admin.StackedInline):
+    model = Question
+    extra = 1
+    inlines = [ChoiceInline]
+
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = ('title', 'module', 'is_published', 'passing_score', 'time_limit', 'total_questions', 'created_at')
+    list_filter = ('is_published', 'created_at')
+    search_fields = ('title', 'description', 'module__title', 'module__course__title')
+    date_hierarchy = 'created_at'
+    
+    def total_questions(self, obj):
+        return obj.total_questions()
+    total_questions.short_description = 'Questions'
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('text', 'quiz', 'points', 'order')
+    list_filter = ('quiz',)
+    search_fields = ('text', 'quiz__title')
+    inlines = [ChoiceInline]
+    ordering = ('quiz', 'order')
+
+@admin.register(Choice)
+class ChoiceAdmin(admin.ModelAdmin):
+    list_display = ('text', 'question', 'is_correct', 'order')
+    list_filter = ('is_correct', 'question__quiz')
+    search_fields = ('text', 'question__text')
+    ordering = ('question', 'order')
+
+class QuizResponseInline(admin.TabularInline):
+    model = QuizResponse
+    extra = 0
+    readonly_fields = ('question', 'selected_choice', 'is_correct')
+    
+    def is_correct(self, obj):
+        return obj.is_correct()
+    is_correct.boolean = True
+    is_correct.short_description = 'Correct'
+
+@admin.register(QuizAttempt)
+class QuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ('enrollment', 'quiz', 'started_at', 'completed_at', 'score', 'passed')
+    list_filter = ('passed', 'started_at', 'completed_at', 'quiz')
+    search_fields = ('enrollment__user__username', 'quiz__title')
+    date_hierarchy = 'started_at'
+    inlines = [QuizResponseInline]
+    readonly_fields = ('score', 'passed')
+
+@admin.register(QuizResponse)
+class QuizResponseAdmin(admin.ModelAdmin):
+    list_display = ('attempt', 'question', 'selected_choice', 'is_correct')
+    list_filter = ('attempt__quiz',)
+    search_fields = ('attempt__enrollment__user__username', 'question__text')
+    
+    def is_correct(self, obj):
+        return obj.is_correct()
+    is_correct.boolean = True
+    is_correct.short_description = 'Correct'
