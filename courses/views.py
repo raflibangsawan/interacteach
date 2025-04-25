@@ -1212,6 +1212,8 @@ def quiz_detail_student(request, course_slug, module_id):
         messages.error(request, "This quiz is not yet available.")
         return redirect('courses:course_detail', course_slug=course_slug)
     
+    questions = quiz.questions.all().prefetch_related('choices')
+
     # Check if the student has already attempted the quiz
     attempt = QuizAttempt.objects.filter(enrollment=enrollment, quiz=quiz).first()
     
@@ -1220,6 +1222,7 @@ def quiz_detail_student(request, course_slug, module_id):
         'module': module,
         'quiz': quiz,
         'attempt': attempt,
+        'questions': questions,
     }
     
     return render(request, 'courses/quiz/quiz_detail.html', context)

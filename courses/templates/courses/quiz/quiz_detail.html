@@ -1,76 +1,136 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}
-    Quiz: {{ quiz.title }} | {{ course.title }}
+{% block title %}{{ quiz.title }} | {{ course.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'courses/css/quiz.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-6">
-        <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="text-blue-600 hover:text-blue-800">
-            <i class="fas fa-arrow-left mr-2"></i>Back to Course
-        </a>
+<div class="content-wrapper">
+    <div class="page-header">
+        <h1 class="page-title">{{ quiz.title }}</h1>
+        <div class="page-actions">
+            <a href="{% url 'courses:course_detail' course.slug %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Course
+            </a>
+        </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-2xl font-bold mb-2">{{ quiz.title }}</h1>
-        <p class="text-gray-600 mb-6">Module: {{ module.title }}</p>
-        
-        <div class="bg-gray-50 p-4 rounded mb-6">
+    <div class="content-card">
+        <div class="card-body">
+            <div class="quiz-meta">
+                <div class="quiz-module">
+                    <span class="meta-label">Module:</span>
+                    <span class="meta-value">{{ quiz.module.title }}</span>
+                </div>
+                
+                {% if quiz.time_limit %}
+                <div class="quiz-time-limit">
+                    <span class="meta-label">Time Limit:</span>
+                    <span class="meta-value">{{ quiz.time_limit }} minutes</span>
+                </div>
+                {% endif %}
+                
+                <div class="quiz-passing-score">
+                    <span class="meta-label">Passing Score:</span>
+                    <span class="meta-value">{{ quiz.passing_score }}%</span>
+                </div>
+            </div>
+            
             {% if quiz.description %}
-            <div class="mb-4">
-                <h3 class="font-semibold text-gray-700 mb-2">Description</h3>
-                <p>{{ quiz.description|linebreaks }}</p>
+            <div class="quiz-description">
+                <div class="description-content">{{ quiz.description|linebreaks }}</div>
             </div>
             {% endif %}
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <h3 class="font-semibold text-gray-700">Questions</h3>
-                    <p>{{ quiz.total_questions }} questions</p>
+            <div class="quiz-details">
+                <div class="detail-item">
+                    <span class="detail-label">Questions</span>
+                    <span class="detail-value">{{ questions|length }}</span>
                 </div>
                 
-                <div>
-                    <h3 class="font-semibold text-gray-700">Time Limit</h3>
-                    <p>{% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}</p>
+                <div class="detail-item">
+                    <span class="detail-label">Time Limit</span>
+                    <span class="detail-value">
+                        {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}
+                    </span>
                 </div>
                 
-                <div>
-                    <h3 class="font-semibold text-gray-700">Passing Score</h3>
-                    <p>{{ quiz.passing_score }}%</p>
+                <div class="detail-item">
+                    <span class="detail-label">Passing Score</span>
+                    <span class="detail-value">{{ quiz.passing_score }}%</span>
                 </div>
-            </div>
-        </div>
-        
-        {% if attempt and attempt.completed_at %}
-        <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
-            <h3 class="font-semibold text-blue-800 mb-2">You've already completed this quiz</h3>
-            <p class="mb-2">Your score: <span class="font-bold">{{ attempt.score|floatformat:1 }}%</span></p>
-            <p class="mb-4">
-                {% if attempt.passed %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <i class="fas fa-check-circle mr-1"></i> Passed
-                </span>
-                {% else %}
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    <i class="fas fa-times-circle mr-1"></i> Failed
-                </span>
+                
+                {% if attempt %}
+                <div class="detail-item">
+                    <span class="detail-label">Your Score</span>
+                    <span class="detail-value {% if attempt.passed %}passed{% else %}failed{% endif %}">
+                        {% if attempt.score %}{{ attempt.score|floatformat:1 }}%{% else %}Not completed{% endif %}
+                    </span>
+                </div>
                 {% endif %}
-            </p>
-            <div>
-                <a href="{% url 'courses:quiz_results' course_slug=course.slug module_id=module.id attempt_id=attempt.id %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    View Results
-                </a>
+            </div>
+            
+            {% if questions %}
+            <div class="quiz-preview">
+                <h3 class="section-subtitle">Quiz Overview</h3>
+                <div class="quiz-questions-preview">
+                    {% for question in questions %}
+                    <div class="question-preview">
+                        <div class="question-number">Question {{ forloop.counter }}</div>
+                        <div class="question-preview-text">{{ question.text|truncatechars:100 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>This quiz doesn't have any questions yet.</p>
+            </div>
+            {% endif %}
+            
+            {% if attempt and attempt.completed_at %}
+            <div class="attempt-summary">
+                <h3 class="section-subtitle">Your Previous Attempt</h3>
+                <div class="attempt-details">
+                    <div class="attempt-score">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value {% if attempt.passed %}passed{% else %}failed{% endif %}">
+                            {{ attempt.score|floatformat:1 }}%
+                        </span>
+                        <span class="score-badge {% if attempt.passed %}passed{% else %}failed{% endif %}">
+                            {% if attempt.passed %}Passed{% else %}Failed{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="attempt-date">
+                        Completed on {{ attempt.completed_at|date:"F j, Y, g:i a" }}
+                    </div>
+                    
+                    <div class="attempt-actions">
+                        <a href="{% url 'courses:quiz_results' course_slug=course.slug module_id=module.id attempt_id=attempt.id %}" class="btn btn-secondary btn-sm">
+                            View Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="quiz-actions">
+                {% if questions %}
+                    <a href="{% url 'courses:take_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-primary btn-large">
+                        {% if attempt and attempt.completed_at %}Retake Quiz{% else %}Start Quiz{% endif %}
+                    </a>
+                {% else %}
+                    <button disabled class="btn btn-primary btn-large disabled">
+                        Quiz Not Available
+                    </button>
+                    <p class="text-center mt-2 text-muted">This quiz doesn't have any questions yet.</p>
+                {% endif %}
             </div>
         </div>
-        {% else %}
-        <div class="flex justify-center">
-            <a href="{% url 'courses:take_quiz' course_slug=course.slug module_id=module.id %}" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-lg font-semibold">
-                Start Quiz
-            </a>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
