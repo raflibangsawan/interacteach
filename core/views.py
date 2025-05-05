@@ -3,7 +3,31 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django import forms
 from courses.models import Course, Module, Lesson, Enrollment, LessonProgress
+
+class SignUpForm(UserCreationForm):
+    first_name = forms.CharField(max_length=30, required=True)
+    last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField(max_length=254, required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your account has been created successfully! You can now log in.")
+            return redirect('core:login')
+    else:
+        form = SignUpForm()
+    
+    return render(request, 'core/signup.html', {'form': form})
 
 @login_required
 def home(request):
@@ -24,7 +48,7 @@ def home(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('core:login')
 
 @login_required
 def course_list(request):

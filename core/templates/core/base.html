@@ -13,11 +13,11 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="{% url 'home' %}">InteracTeach</a>
+                    <a href="{% url 'core:home' %}">InteracTeach</a>
                 </div>
                 <nav class="nav">
                     <ul class="nav-list">
-                        <li class="nav-item"><a href="{% url 'home' %}" class="nav-link">Home</a></li>
+                        <li class="nav-item"><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
                         <li class="nav-item"><a href="{% url 'courses:course_list' %}" class="nav-link">Courses</a></li>
                         {% if user.is_authenticated %}
                             <li class="nav-item"><a href="{% url 'courses:my_courses' %}" class="nav-link">My Learning</a></li>
@@ -36,13 +36,14 @@
                             {% endif %}
                             
                             <li class="nav-item">
-                                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                                <form method="post" action="{% url 'core:logout' %}" class="logout-form">
                                     {% csrf_token %}
                                     <button type="submit" class="nav-link logout-button">Logout</button>
                                 </form>
                             </li>
                         {% else %}
-                            <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                            <li class="nav-item"><a href="{% url 'core:login' %}" class="nav-link">Login</a></li>
+                            <li class="nav-item"><a href="{% url 'core:signup' %}" class="nav-link">Sign Up</a></li>
                         {% endif %}
                     </ul>
                 </nav>
@@ -81,4 +82,3 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-
