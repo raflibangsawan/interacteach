@@ -1,127 +1,209 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
-{% block title %}{{ thread.title }} - Forum{% endblock %}
+{% block title %}{{ thread.title }} | {{ course.title }} Forum{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/courses/css/forum.css">
+<link rel="stylesheet" href="{% static 'courses/css/forum.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="forum-container">
+<div class="container forum-container">
     <div class="forum-breadcrumb">
-        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
-        <span class="separator">/</span>
-        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}">Forum</a>
-        <span class="separator">/</span>
-        <span>Thread</span>
+        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a> /
+        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}">Forum</a> /
+        <span>{{ thread.title }}</span>
     </div>
 
-    <div class="thread-detail">
-        <div class="thread-header">
-            <h1 class="thread-title">{{ thread.title }}</h1>
-            
-            <div class="thread-meta">
-                <span class="thread-author">Started by {{ thread.user.get_full_name|default:thread.user.username }}</span>
-                <span class="thread-date">{{ thread.created_at|date:"F j, Y, g:i a" }}</span>
-                
-                {% if thread.is_pinned %}
-                    <span class="thread-status pinned">Pinned</span>
-                {% endif %}
-                
-                {% if thread.is_locked %}
-                    <span class="thread-status locked">Locked</span>
-                {% endif %}
-            </div>
-            
-            <div class="thread-actions">
-                {% if thread.user == request.user or is_instructor or request.user.is_staff %}
-                    <a href="{% url 'courses:forum_thread_edit' course_slug=course.slug thread_id=thread.id %}" class="action-button edit">Edit</a>
-                    <a href="{% url 'courses:forum_thread_delete' course_slug=course.slug thread_id=thread.id %}" class="action-button delete">Delete</a>
-                {% endif %}
-                
-                {% if is_instructor or request.user.is_staff %}
-                    <a href="{% url 'courses:forum_thread_pin' course_slug=course.slug thread_id=thread.id %}" class="action-button pin">
-                        {% if thread.is_pinned %}Unpin{% else %}Pin{% endif %}
-                    </a>
-                    <a href="{% url 'courses:forum_thread_lock' course_slug=course.slug thread_id=thread.id %}" class="action-button lock">
-                        {% if thread.is_locked %}Unlock{% else %}Lock{% endif %}
-                    </a>
-                {% endif %}
-            </div>
+    <div class="forum-header">
+        <h1>{{ thread.title }}</h1>
+        <div class="thread-meta">
+            {% if thread.is_pinned %}
+            <span class="badge pinned-badge">Pinned</span>
+            {% endif %}
+            {% if thread.is_locked %}
+            <span class="badge locked-badge">Locked</span>
+            {% endif %}
+            <span class="thread-author">Posted by {{ thread.user.get_full_name|default:thread.user.username }}</span>
+            <span class="thread-date">{{ thread.created_at|date:"M d, Y" }}</span>
         </div>
-        
+    </div>
+
+    <div class="thread-item">
         <div class="thread-content">
-            {{ thread.content|linebreaks }}
+            <div class="thread-author-info">
+                <div class="author-name">{{ thread.user.get_full_name|default:thread.user.username }}</div>
+                {% if thread.user.instructor_profile %}
+                <span class="badge instructor-badge">Instructor</span>
+                {% endif %}
+            </div>
+            <div class="thread-message">
+                {{ thread.content|linebreaks }}
+            </div>
         </div>
     </div>
 
-    <div class="replies-section">
-        <h2 class="replies-title">Replies ({{ replies.count }})</h2>
-        
-        {% if replies %}
-            <div class="reply-list">
-                {% for reply in replies %}
-                    <div class="reply-item {% if reply.is_solution %}solution{% endif %}">
-                        <div class="reply-header">
-                            <div class="reply-meta">
-                                <span class="reply-author">{{ reply.user.get_full_name|default:reply.user.username }}</span>
-                                <span class="reply-date">{{ reply.created_at|date:"F j, Y, g:i a" }}</span>
-                                
-                                {% if reply.is_solution %}
-                                    <span class="reply-status solution">Solution</span>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="reply-actions">
-                                {% if reply.user == request.user or is_instructor or request.user.is_staff %}
-                                    <a href="{% url 'courses:forum_reply_edit' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button edit">Edit</a>
-                                    <a href="{% url 'courses:forum_reply_delete' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button delete">Delete</a>
-                                {% endif %}
-                                
-                                {% if thread.user == request.user or is_instructor or request.user.is_staff %}
-                                    <a href="{% url 'courses:forum_reply_mark_solution' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="action-button solution">
-                                        {% if reply.is_solution %}Unmark Solution{% else %}Mark as Solution{% endif %}
-                                    </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="reply-content">
-                            {{ reply.content|linebreaks }}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="no-replies">
-                <p>No replies yet. Be the first to respond!</p>
-            </div>
-        {% endif %}
-    </div>
+    {% if thread.replies.count > 0 %}
+    <h2 class="section-heading">Replies ({{ thread.replies.count }})</h2>
+    {% endif %}
 
-    {% if not thread.is_locked %}
-        <div class="reply-form-section">
-            <h3 class="reply-form-title">Post a Reply</h3>
-            
-            <form method="post" class="reply-form">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    {{ form.content }}
-                    {% if form.content.errors %}
-                        <div class="form-error">{{ form.content.errors }}</div>
+    <div class="thread-replies">
+        {% for reply in replies %}
+        <div class="thread-item reply" id="reply-{{ reply.id }}">
+            <div class="thread-content">
+                <div class="thread-author-info">
+                    <div class="author-name">{{ reply.user.get_full_name|default:reply.user.username }}</div>
+                    {% if reply.user.instructor_profile %}
+                    <span class="badge instructor-badge">Instructor</span>
+                    {% endif %}
+                    <div class="reply-date">{{ reply.created_at|date:"M d, Y" }}</div>
+                </div>
+                <div class="thread-message">
+                    {{ reply.content|linebreaks }}
+                    
+                    {% if reply.is_solution %}
+                    <div class="solution-badge">
+                        <i class="fas fa-check-circle"></i> Marked as solution
+                    </div>
+                    {% endif %}
+                    
+                    <div class="reply-actions">
+                        {% if can_post %}
+                        <button class="btn-reply" data-reply-id="{{ reply.id }}">Reply</button>
+                        {% endif %}
+                        
+                        {% if user == reply.user or user.is_staff %}
+                        <a href="{% url 'courses:forum_reply_delete' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="btn-delete">Delete</a>
+                        {% endif %}
+                        
+                        {% if user == thread.user or user.is_staff %}
+                        <form method="post" action="{% url 'courses:forum_reply_mark_solution' course_slug=course.slug thread_id=thread.id reply_id=reply.id %}" class="inline-form">
+                            {% csrf_token %}
+                            {% if reply.is_solution %}
+                            <button type="submit" class="btn-unmark-solution">Unmark as Solution</button>
+                            {% else %}
+                            <button type="submit" class="btn-mark-solution">Mark as Solution</button>
+                            {% endif %}
+                        </form>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Nested reply form (hidden by default) -->
+                    <div class="nested-reply-form" id="nested-reply-form-{{ reply.id }}" style="display: none;">
+                        <form method="post" action="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent_id" value="{{ reply.id }}">
+                            {{ nested_form.content }}
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit">Post Reply</button>
+                                <button type="button" class="btn-cancel" data-reply-id="{{ reply.id }}">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Nested replies -->
+                    {% if reply.child_replies.exists %}
+                    <div class="nested-replies">
+                        {% for nested_reply in reply.child_replies.all %}
+                        <div class="nested-reply" id="reply-{{ nested_reply.id }}">
+                            <div class="nested-reply-author-info">
+                                <div class="author-name">{{ nested_reply.user.get_full_name|default:nested_reply.user.username }}</div>
+                                {% if nested_reply.user.instructor_profile %}
+                                <span class="badge instructor-badge small">Instructor</span>
+                                {% endif %}
+                                <div class="reply-date">{{ nested_reply.created_at|date:"M d, Y" }}</div>
+                            </div>
+                            <div class="nested-reply-content">
+                                {{ nested_reply.content|linebreaks }}
+                                
+                                <div class="reply-actions">
+                                    {% if user == nested_reply.user or user.is_staff %}
+                                    <a href="{% url 'courses:forum_reply_delete' course_slug=course.slug thread_id=thread.id reply_id=nested_reply.id %}" class="btn-delete">Delete</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
                 </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="submit-button">Post Reply</button>
-                </div>
-            </form>
+            </div>
         </div>
+        {% empty %}
+        <div class="no-replies">No replies yet. Be the first to reply!</div>
+        {% endfor %}
+    </div>
+
+    {% if can_post %}
+    <div class="reply-form">
+        <h3>Post a Reply</h3>
+        <form method="post" action="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}">
+            {% csrf_token %}
+            {{ form.content }}
+            <button type="submit" class="btn-submit">Post Reply</button>
+        </form>
+    </div>
     {% else %}
-        <div class="thread-locked-message">
-            <p>This thread is locked. New replies are not allowed.</p>
-        </div>
+    <div class="thread-locked-message">
+        <i class="fas fa-lock"></i> This thread is locked. New replies are not allowed.
+    </div>
     {% endif %}
+
+    <div class="forum-actions thread-actions">
+        <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}" class="btn-back">Back to Forum</a>
+        
+        {% if user == thread.user or user.is_staff %}
+        <a href="{% url 'courses:forum_thread_delete' course_slug=course.slug thread_id=thread.id %}" class="btn-delete">Delete Thread</a>
+        {% endif %}
+        
+        {% if user.is_staff %}
+        <form method="post" action="{% url 'courses:forum_thread_pin' course_slug=course.slug thread_id=thread.id %}" class="inline-form">
+            {% csrf_token %}
+            {% if thread.is_pinned %}
+            <button type="submit" class="btn-unpin">Unpin Thread</button>
+            {% else %}
+            <button type="submit" class="btn-pin">Pin Thread</button>
+            {% endif %}
+        </form>
+        
+        <form method="post" action="{% url 'courses:forum_thread_lock' course_slug=course.slug thread_id=thread.id %}" class="inline-form">
+            {% csrf_token %}
+            {% if thread.is_locked %}
+            <button type="submit" class="btn-unlock">Unlock Thread</button>
+            {% else %}
+            <button type="submit" class="btn-lock">Lock Thread</button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show/hide nested reply forms
+    const replyButtons = document.querySelectorAll('.btn-reply');
+    replyButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const replyId = this.getAttribute('data-reply-id');
+            const replyForm = document.getElementById(`nested-reply-form-${replyId}`);
+            replyForm.style.display = 'block';
+            this.style.display = 'none';
+        });
+    });
+    
+    // Cancel nested reply
+    const cancelButtons = document.querySelectorAll('.btn-cancel');
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const replyId = this.getAttribute('data-reply-id');
+            const replyForm = document.getElementById(`nested-reply-form-${replyId}`);
+            const replyButton = document.querySelector(`.btn-reply[data-reply-id="${replyId}"]`);
+            replyForm.style.display = 'none';
+            replyButton.style.display = 'inline-block';
+        });
+    });
+});
+</script>
 {% endblock %}

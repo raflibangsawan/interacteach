@@ -19,7 +19,7 @@
           {% endif %}
       </div>
       
-      {% if is_instructor %}
+      {% if is_this_course_instructor %}
       <div class="instructor-actions">
           <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-primary">Edit Course</a>
           {% if course.is_published %}
@@ -73,7 +73,7 @@
                               <ul class="lesson-list">
                                   {% for lesson in module.lessons.all %}
                                       <li class="lesson-item">
-                                          {% if is_enrolled or is_instructor %}
+                                          {% if is_enrolled or is_this_course_instructor %}
                                               <a href="{% url 'courses:lesson_detail' course_slug=course.slug lesson_id=lesson.id %}" class="lesson-link">
                                                   {{ lesson.title }}
                                               </a>
@@ -97,7 +97,7 @@
                               </div>
                               {% endif %}
                               
-                              {% if is_instructor %}
+                              {% if is_this_course_instructor %}
                               <div class="module-actions">
                                   <a href="{% url 'courses:edit_module' course_slug=course.slug module_id=module.id %}" class="btn btn-sm btn-primary">Edit Module</a>
                                   <a href="{% url 'courses:create_lesson' course_slug=course.slug module_id=module.id %}" class="btn btn-sm btn-secondary">Add Lesson</a>
@@ -108,7 +108,7 @@
                   {% endfor %}
               </div>
               
-              {% if is_instructor %}
+              {% if is_this_course_instructor %}
               <div class="add-module-action">
                   <a href="{% url 'courses:create_module' course_slug=course.slug %}" class="btn btn-primary">Add Module</a>
               </div>
@@ -116,7 +116,7 @@
           {% else %}
               <p class="no-modules">No content available for this course yet.</p>
               
-              {% if is_instructor %}
+              {% if is_this_course_instructor %}
               <div class="add-module-action">
                   <a href="{% url 'courses:create_module' course_slug=course.slug %}" class="btn btn-primary">Add First Module</a>
               </div>
@@ -129,7 +129,7 @@
           <h2 class="section-title">Discussion Forum</h2>
           <p class="forum-description">Join the discussion with fellow students and instructors.</p>
           
-          {% if is_enrolled or is_instructor %}
+          {% if is_enrolled or is_this_course_instructor %}
               <a href="{% url 'courses:forum_thread_list' course_slug=course.slug %}" class="btn btn-primary forum-button">Go to Forum</a>
           {% else %}
               <p class="forum-locked">You need to enroll in this course to access the forum.</p>
@@ -150,7 +150,7 @@
                       {% if progress_percentage > 0 %}Continue Course{% else %}Start Course{% endif %}
                   </a>
               {% endif %}
-          {% elif not is_instructor and course.is_published %}
+          {% elif not is_this_course_instructor and course.is_published %}
               <form method="post" action="{% url 'courses:enroll_course' course_slug=course.slug %}">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-success enroll-button">Enroll Now</button>

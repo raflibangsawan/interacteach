@@ -2,85 +2,156 @@
 {% load static %}
 
 {% block title %}
-    {% if is_new %}Create Quiz{% else %}Edit Quiz{% endif %} | {{ course.title }}
+  {% if is_new %}Create Quiz{% else %}Edit Quiz{% endif %} | {{ course.title }}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'courses/css/instructor.css' %}">
+<link rel="stylesheet" href="{% static 'courses/css/quiz.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-6">
-        <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="text-blue-600 hover:text-blue-800">
-            <i class="fas fa-arrow-left mr-2"></i>Back to Course
-        </a>
+<div class="content-container">
+    <div class="content-header">
+        <h1 class="page-title">{% if is_new %}Create Quiz for Module: {{ module.title }}{% else %}Edit Quiz: {{ quiz.title }}{% endif %}</h1>
+        <div class="header-actions">
+            <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Course
+            </a>
+        </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-2xl font-bold mb-6">
-            {% if is_new %}Create Quiz for Module: {{ module.title }}{% else %}Edit Quiz: {{ quiz.title }}{% endif %}
-        </h1>
-        
-        <form method="post" class="space-y-6">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {{ form.non_field_errors }}
-            </div>
-            {% endif %}
-            
-            <div class="space-y-4">
-                <div>
-                    <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700">Title</label>
+    <div class="content-card">
+        <div class="card-body">
+            <form method="post" class="form">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
                     {{ form.title }}
                     {% if form.title.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.title.errors }}</p>
+                    <div class="form-error">{{ form.title.errors }}</div>
                     {% endif %}
                 </div>
                 
-                <div>
-                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700">Description</label>
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
                     {{ form.description }}
                     {% if form.description.errors %}
-                    <p class="text-red-500 text-xs mt-1">{{ form.description.errors }}</p>
+                    <div class="form-error">{{ form.description.errors }}</div>
                     {% endif %}
-                    <p class="text-gray-500 text-xs mt-1">Provide instructions or context for the quiz.</p>
+                    <div class="form-help">Provide instructions or context for the quiz.</div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="{{ form.time_limit.id_for_label }}" class="block text-sm font-medium text-gray-700">Time Limit (minutes)</label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.time_limit.id_for_label }}" class="form-label">Time Limit (minutes)</label>
                         {{ form.time_limit }}
                         {% if form.time_limit.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.time_limit.errors }}</p>
+                        <div class="form-error">{{ form.time_limit.errors }}</div>
                         {% endif %}
-                        <p class="text-gray-500 text-xs mt-1">Set to 0 for no time limit.</p>
+                        <div class="form-help">Set to 0 for no time limit.</div>
                     </div>
                     
-                    <div>
-                        <label for="{{ form.passing_score.id_for_label }}" class="block text-sm font-medium text-gray-700">Passing Score (%)</label>
+                    <div class="form-group">
+                        <label for="{{ form.passing_score.id_for_label }}" class="form-label">Passing Score (%)</label>
                         {{ form.passing_score }}
                         {% if form.passing_score.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.passing_score.errors }}</p>
+                        <div class="form-error">{{ form.passing_score.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
                 
-                <div class="flex items-center">
+                <div class="form-group checkbox-group">
                     {{ form.is_published }}
-                    <label for="{{ form.is_published.id_for_label }}" class="ml-2 block text-sm text-gray-900">
+                    <label for="{{ form.is_published.id_for_label }}" class="checkbox-label">
                         Publish Quiz (make available to students)
                     </label>
                 </div>
-            </div>
-            
-            <div class="flex justify-between pt-4">
-                <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-                    Cancel
-                </a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    {% if is_new %}Create Quiz{% else %}Save Changes{% endif %}
-                </button>
-            </div>
-        </form>
+                
+                <div class="form-actions">
+                    <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if is_new %}Create Quiz{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+    
+    {% if quiz %}
+    <div class="content-card">
+        <div class="card-header">
+            <div class="card-header-title">
+                <h2 class="section-title">Questions</h2>
+            </div>
+            <div class="card-header-actions">
+                <a href="{% url 'courses:create_question' course_slug=course.slug module_id=module.id %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Question
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if quiz.questions.all %}
+                <div class="questions-list">
+                    {% for question in quiz.questions.all %}
+                    <div class="question-item">
+                        <div class="question-header">
+                            <h3 class="question-title">{{ question.text }}</h3>
+                            <div class="question-actions">
+                                <a href="{% url 'courses:edit_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'courses:delete_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="question-meta">
+                            <span class="question-points">Points: {{ question.points }}</span>
+                        </div>
+                        
+                        <div class="choices-list">
+                            {% for choice in question.choices.all %}
+                            <div class="choice-item {% if choice.is_correct %}correct-choice{% endif %}">
+                                <span class="choice-marker {% if choice.is_correct %}correct-marker{% endif %}">
+                                    {% if choice.is_correct %}<i class="fas fa-check-circle"></i>{% else %}{{ forloop.counter }}{% endif %}
+                                </span>
+                                <span class="choice-text">{{ choice.text }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No questions added yet. Click "Add Question" to create your first question.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="danger-zone">
+        <h2 class="danger-title">Danger Zone</h2>
+        <p class="danger-description">Be careful, these actions cannot be undone.</p>
+        
+        <div class="danger-actions">
+            <a href="{% url 'courses:delete_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete Quiz
+            </a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

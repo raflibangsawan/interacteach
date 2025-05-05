@@ -1,20 +1,21 @@
 {% extends 'core/base.html' %}
+{% load static %}
 
 {% block title %}Forum - {{ course.title }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="/static/courses/css/forum.css">
+<link rel="stylesheet" href="{% static 'courses/css/forum.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="forum-container">
+<div class="container forum-container">
+    <div class="forum-breadcrumb">
+        <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a> /
+        <span>Forum</span>
+    </div>
+
     <div class="forum-header">
-        <div class="forum-breadcrumb">
-            <a href="{% url 'courses:course_detail' course_slug=course.slug %}">{{ course.title }}</a>
-            <span class="separator">/</span>
-            <span>Forum</span>
-        </div>
-        <h1 class="forum-title">Course Forum</h1>
+        <h1>Course Forum</h1>
         <p class="forum-description">Discuss topics related to this course with fellow students and instructors</p>
     </div>
 
@@ -33,7 +34,7 @@
                 <option value="replies" {% if sort_by == 'replies' %}selected{% endif %}>Most Replies</option>
             </select>
         </div>
-        <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="create-thread-button">Create Thread</a>
+        <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="btn-submit">Create Thread</a>
     </div>
 
     <div class="thread-list">
@@ -42,13 +43,13 @@
                 <div class="thread-item {% if thread.is_pinned %}pinned{% endif %} {% if thread.is_locked %}locked{% endif %}">
                     <div class="thread-status">
                         {% if thread.is_pinned %}
-                            <span class="status-icon pinned" title="Pinned Thread">📌</span>
+                            <span class="badge pinned-badge">Pinned</span>
                         {% endif %}
                         {% if thread.is_locked %}
-                            <span class="status-icon locked" title="Locked Thread">🔒</span>
+                            <span class="badge locked-badge">Locked</span>
                         {% endif %}
                     </div>
-                    <div class="thread-content">
+                    <div class="thread-content-preview">
                         <h3 class="thread-title">
                             <a href="{% url 'courses:forum_thread_detail' course_slug=course.slug thread_id=thread.id %}">{{ thread.title }}</a>
                         </h3>
@@ -82,7 +83,7 @@
         {% else %}
             <div class="empty-state">
                 <p>No threads found. Be the first to start a discussion!</p>
-                <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="create-thread-button">Create Thread</a>
+                <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="btn-submit">Create Thread</a>
             </div>
         {% endif %}
     </div>

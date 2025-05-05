@@ -5,127 +5,141 @@
     Quiz: {{ quiz.title }} | {{ course.title }}
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'courses/css/instructor.css' %}">
+<link rel="stylesheet" href="{% static 'courses/css/quiz.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-6">
-        <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="text-blue-600 hover:text-blue-800">
-            <i class="fas fa-arrow-left mr-2"></i>Back to Course
+<div class="content-container">
+    <div class="content-header">
+        <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Course
         </a>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <h1 class="text-2xl font-bold">{{ quiz.title }}</h1>
-                <p class="text-gray-600">Module: {{ module.title }}</p>
+    <div class="content-card">
+        <div class="card-header">
+            <div class="card-header-title">
+                <h1 class="page-title">{{ quiz.title }}</h1>
+                <p class="page-subtitle">Module: {{ module.title }}</p>
             </div>
-            <div class="flex space-x-2">
-                <a href="{% url 'courses:edit_quiz' course_slug=course.slug module_id=module.id %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    <i class="fas fa-edit mr-2"></i>Edit Quiz
+            <div class="card-header-actions">
+                <a href="{% url 'courses:edit_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Quiz
                 </a>
-                <a href="{% url 'courses:delete_quiz' course_slug=course.slug module_id=module.id %}" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    <i class="fas fa-trash mr-2"></i>Delete
+                <a href="{% url 'courses:delete_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Delete
                 </a>
             </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-gray-50 p-4 rounded">
-                <h3 class="font-semibold text-gray-700">Status</h3>
-                <p class="mt-2">
-                    {% if quiz.is_published %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-check-circle mr-1"></i> Published
-                    </span>
-                    {% else %}
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        <i class="fas fa-clock mr-1"></i> Draft
-                    </span>
-                    {% endif %}
-                </p>
-            </div>
-            
-            <div class="bg-gray-50 p-4 rounded">
-                <h3 class="font-semibold text-gray-700">Settings</h3>
-                <ul class="mt-2 space-y-1 text-sm">
-                    <li><span class="text-gray-600">Time Limit:</span> {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No limit{% endif %}</li>
-                    <li><span class="text-gray-600">Passing Score:</span> {{ quiz.passing_score }}%</li>
-                    <li><span class="text-gray-600">Questions:</span> {{ quiz.total_questions }}</li>
-                    <li><span class="text-gray-600">Total Points:</span> {{ quiz.total_points }}</li>
-                </ul>
-            </div>
-            
-            <div class="bg-gray-50 p-4 rounded">
-                <h3 class="font-semibold text-gray-700">Statistics</h3>
-                <ul class="mt-2 space-y-1 text-sm">
-                    <li><span class="text-gray-600">Total Attempts:</span> {{ total_attempts }}</li>
-                    <li><span class="text-gray-600">Average Score:</span> {{ avg_score }}%</li>
-                    <li><span class="text-gray-600">Pass Rate:</span> {{ pass_rate }}%</li>
-                </ul>
-            </div>
-        </div>
-        
-        {% if quiz.description %}
-        <div class="mb-6">
-            <h3 class="font-semibold text-gray-700 mb-2">Description</h3>
-            <div class="bg-gray-50 p-4 rounded">
-                {{ quiz.description|linebreaks }}
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold">Questions ({{ questions|length }})</h2>
-            <a href="{% url 'courses:create_question' course_slug=course.slug module_id=module.id %}" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                <i class="fas fa-plus mr-2"></i>Add Question
-            </a>
-        </div>
-        
-        {% if questions %}
-        <div class="space-y-6">
-            {% for question in questions %}
-            <div class="border rounded-lg p-4 hover:bg-gray-50">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-semibold">{{ forloop.counter }}. {{ question.text }}</h3>
-                        <p class="text-sm text-gray-600 mt-1">Points: {{ question.points }}</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <a href="{% url 'courses:edit_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{% url 'courses:delete_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="text-red-600 hover:text-red-800">
-                            <i class="fas fa-trash"></i>
-                        </a>
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">Status</h3>
+                    <div class="info-card-content">
+                        {% if quiz.is_published %}
+                        <span class="status-badge status-published">
+                            <i class="fas fa-check-circle"></i> Published
+                        </span>
+                        {% else %}
+                        <span class="status-badge status-draft">
+                            <i class="fas fa-clock"></i> Draft
+                        </span>
+                        {% endif %}
                     </div>
                 </div>
                 
-                <div class="mt-3 pl-4">
-                    <p class="text-sm font-medium text-gray-700 mb-2">Choices:</p>
-                    <ul class="space-y-1">
-                        {% for choice in question.choices.all %}
-                        <li class="text-sm {% if choice.is_correct %}font-semibold text-green-600{% endif %}">
-                            {% if choice.is_correct %}<i class="fas fa-check-circle mr-1"></i>{% else %}<i class="far fa-circle mr-1"></i>{% endif %}
-                            {{ choice.text }}
-                        </li>
-                        {% endfor %}
-                    </ul>
+                <div class="info-card">
+                    <h3 class="info-card-title">Settings</h3>
+                    <div class="info-card-content">
+                        <ul class="info-list">
+                            <li><span class="info-label">Time Limit:</span> {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No limit{% endif %}</li>
+                            <li><span class="info-label">Passing Score:</span> {{ quiz.passing_score }}%</li>
+                            <li><span class="info-label">Questions:</span> {{ quiz.total_questions }}</li>
+                            <li><span class="info-label">Total Points:</span> {{ quiz.total_points }}</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="info-card-title">Statistics</h3>
+                    <div class="info-card-content">
+                        <ul class="info-list">
+                            <li><span class="info-label">Total Attempts:</span> {{ total_attempts }}</li>
+                            <li><span class="info-label">Average Score:</span> {{ avg_score }}%</li>
+                            <li><span class="info-label">Pass Rate:</span> {{ pass_rate }}%</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            {% endfor %}
+            
+            {% if quiz.description %}
+            <div class="description-section">
+                <h3 class="section-title">Description</h3>
+                <div class="description-content">
+                    {{ quiz.description|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="text-center py-8">
-            <p class="text-gray-500">No questions have been added to this quiz yet.</p>
-            <p class="mt-2">
-                <a href="{% url 'courses:create_question' course_slug=course.slug module_id=module.id %}" class="text-blue-600 hover:text-blue-800">
+    </div>
+    
+    <div class="content-card">
+        <div class="card-header">
+            <div class="card-header-title">
+                <h2 class="section-title">Questions ({{ questions|length }})</h2>
+            </div>
+            <div class="card-header-actions">
+                <a href="{% url 'courses:create_question' course_slug=course.slug module_id=module.id %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Question
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if questions %}
+            <div class="questions-list">
+                {% for question in questions %}
+                <div class="question-item">
+                    <div class="question-header">
+                        <h3 class="question-title">{{ forloop.counter }}. {{ question.text }}</h3>
+                        <div class="question-meta">
+                            <span class="question-points">Points: {{ question.points }}</span>
+                        </div>
+                        <div class="question-actions">
+                            <a href="{% url 'courses:edit_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'courses:delete_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="choices-list">
+                        {% for choice in question.choices.all %}
+                        <div class="choice-item {% if choice.is_correct %}correct-choice{% endif %}">
+                            <span class="choice-marker {% if choice.is_correct %}correct-marker{% endif %}">
+                                {% if choice.is_correct %}<i class="fas fa-check-circle"></i>{% else %}{{ forloop.counter }}{% endif %}
+                            </span>
+                            <span class="choice-text">{{ choice.text }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No questions have been added to this quiz yet.</p>
+                <a href="{% url 'courses:create_question' course_slug=course.slug module_id=module.id %}" class="btn btn-primary">
                     Add your first question
                 </a>
-            </p>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

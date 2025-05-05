@@ -8,10 +8,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-wrapper">
-    <div class="page-header">
+<div class="content-container">
+    <div class="content-header">
         <h1 class="page-title">Quiz Results: {{ quiz.title }}</h1>
-        <div class="page-actions">
+        <div class="header-actions">
             <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Course
             </a>
@@ -21,86 +21,77 @@
     <div class="content-card">
         <div class="card-body">
             <div class="results-summary">
-                <div class="results-header">
-                    <h2 class="results-title">Your Results</h2>
-                    <div class="results-score {% if attempt.passed %}passed{% else %}failed{% endif %}">
-                        {{ attempt.score|floatformat:1 }}%
-                    </div>
+                <div class="results-score">{{ attempt.score|floatformat:1 }}%</div>
+                <div class="results-status status-{% if attempt.passed %}passed{% else %}failed{% endif %}">
+                    {% if attempt.passed %}Passed{% else %}Failed{% endif %}
                 </div>
-                
-                <div class="summary-details">
-                    <div class="summary-item">
-                        <div class="item-label">Status</div>
-                        <div class="item-value">
-                            <span class="result-badge {% if attempt.passed %}passed{% else %}failed{% endif %}">
-                                {% if attempt.passed %}Passed{% else %}Failed{% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="item-label">Correct Answers</div>
-                        <div class="item-value">{{ attempt.correct_count }} / {{ questions_data|length }}</div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="item-label">Time Taken</div>
-                        <div class="item-value">
+                <div class="results-message">
+                    {% if attempt.passed %}
+                    Congratulations! You have successfully passed this quiz.
+                    {% else %}
+                    You did not pass this quiz.
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">Quiz Summary</h3>
+                    <ul class="info-list">
+                        <li><span class="info-label">Correct Answers:</span> {{ attempt.correct_count }} / {{ questions_data|length }}</li>
+                        <li><span class="info-label">Time Taken:</span> 
                             {% if attempt.started_at and attempt.completed_at %}
                                 {{ attempt.time_taken }}
                             {% else %}
                                 N/A
                             {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="summary-item">
-                        <div class="item-label">Completed On</div>
-                        <div class="item-value">{{ attempt.completed_at|date:"M d, Y, g:i a" }}</div>
-                    </div>
+                        </li>
+                        <li><span class="info-label">Completed On:</span> {{ attempt.completed_at|date:"M d, Y, g:i a" }}</li>
+                        <li><span class="info-label">Passing Score:</span> {{ quiz.passing_score }}%</li>
+                    </ul>
                 </div>
             </div>
             
-            <div class="results-questions">
+            <div class="results-details">
                 <h3 class="section-subtitle">Question Review</h3>
                 
                 {% for data in questions_data %}
-                <div class="question-review {% if data.is_correct %}correct{% else %}incorrect{% endif %}">
-                    <div class="question-header">
-                        <div class="question-text">{{ data.question.text }}</div>
-                        <div class="question-status {% if data.is_correct %}correct{% else %}incorrect{% endif %}">
-                            {% if data.is_correct %}Correct{% else %}Incorrect{% endif %}
-                        </div>
+                <div class="results-question">
+                    <div class="question-result">
+                        {% if data.is_correct %}
+                        <i class="fas fa-check-circle result-icon result-correct"></i>
+                        {% else %}
+                        <i class="fas fa-times-circle result-icon result-incorrect"></i>
+                        {% endif %}
+                        <h4 class="question-title">{{ data.question.text }}</h4>
+                        <span class="result-points">{{ data.question.points }} points</span>
                     </div>
                     
-                    <div class="question-meta">
-                        <span class="question-points">{{ data.question.points }} points</span>
-                    </div>
-                    
-                    <div class="choices-review">
+                    <div class="answer-choices">
                         {% for choice in data.question.choices.all %}
-                        <div class="choice-review 
+                        <div class="answer-choice 
                             {% if data.response.selected_choice.id == choice.id %}selected{% endif %}
                             {% if choice.is_correct %}correct{% endif %}
                             {% if data.response.selected_choice.id == choice.id and not choice.is_correct %}incorrect{% endif %}">
                             
-                            <div class="choice-indicator">
+                            <div class="choice-marker 
+                                {% if choice.is_correct %}correct-marker{% endif %}
+                                {% if data.response.selected_choice.id == choice.id and not choice.is_correct %}incorrect-marker{% endif %}">
                                 {% if choice.is_correct %}
-                                <i class="fas fa-check-circle correct-icon"></i>
+                                <i class="fas fa-check"></i>
                                 {% elif data.response.selected_choice.id == choice.id and not choice.is_correct %}
-                                <i class="fas fa-times-circle incorrect-icon"></i>
+                                <i class="fas fa-times"></i>
                                 {% else %}
-                                <i class="far fa-circle"></i>
+                                <i class="fas fa-circle"></i>
                                 {% endif %}
                             </div>
                             
-                            <div class="choice-content">
-                                <div class="choice-text">{{ choice.text }}</div>
-                                
+                            <div class="answer-text {% if choice.is_correct %}correct-choice{% endif %}">
+                                {{ choice.text }}
                                 {% if choice.is_correct %}
-                                <span class="choice-label correct">Correct Answer</span>
+                                <span class="correct-answer">(Correct Answer)</span>
                                 {% elif data.response.selected_choice.id == choice.id %}
-                                <span class="choice-label incorrect">Your Answer</span>
+                                <span class="your-answer">(Your Answer)</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -110,16 +101,10 @@
                 {% endfor %}
             </div>
             
-            <div class="results-actions">
+            <div class="form-actions">
                 <a href="{% url 'courses:quiz_detail_student' course_slug=course.slug module_id=module.id %}" class="btn btn-primary">
                     Back to Quiz
                 </a>
-                
-                {% if not attempt.passed %}
-                <a href="{% url 'courses:take_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-success">
-                    Retake Quiz
-                </a>
-                {% endif %}
             </div>
         </div>
     </div>

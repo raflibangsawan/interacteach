@@ -8,10 +8,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-wrapper">
-    <div class="page-header">
+<div class="content-container">
+    <div class="content-header">
         <h1 class="page-title">{{ quiz.title }}</h1>
-        <div class="page-actions">
+        <div class="header-actions">
             <a href="{% url 'courses:course_detail' course.slug %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Course
             </a>
@@ -20,67 +20,58 @@
     
     <div class="content-card">
         <div class="card-body">
-            <div class="quiz-meta">
-                <div class="quiz-module">
-                    <span class="meta-label">Module:</span>
-                    <span class="meta-value">{{ quiz.module.title }}</span>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">Quiz Information</h3>
+                    <ul class="info-list">
+                        <li><span class="info-label">Module:</span> {{ quiz.module.title }}</li>
+                        <li><span class="info-label">Time Limit:</span> {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}</li>
+                        <li><span class="info-label">Passing Score:</span> {{ quiz.passing_score }}%</li>
+                        <li><span class="info-label">Questions:</span> {{ questions|length }}</li>
+                    </ul>
                 </div>
                 
-                {% if quiz.time_limit %}
-                <div class="quiz-time-limit">
-                    <span class="meta-label">Time Limit:</span>
-                    <span class="meta-value">{{ quiz.time_limit }} minutes</span>
+                {% if attempt %}
+                <div class="info-card">
+                    <h3 class="info-card-title">Your Results</h3>
+                    <ul class="info-list">
+                        <li>
+                            <span class="info-label">Score:</span> 
+                            <span class="{% if attempt.passed %}text-success{% else %}text-danger{% endif %}">
+                                {% if attempt.score %}{{ attempt.score|floatformat:1 }}%{% else %}Not completed{% endif %}
+                            </span>
+                        </li>
+                        <li>
+                            <span class="info-label">Status:</span>
+                            <span class="status-badge {% if attempt.passed %}status-published{% else %}status-draft{% endif %}">
+                                {% if attempt.passed %}Passed{% else %}Failed{% endif %}
+                            </span>
+                        </li>
+                        {% if attempt.completed_at %}
+                        <li><span class="info-label">Completed:</span> {{ attempt.completed_at|date:"F j, Y, g:i a" }}</li>
+                        {% endif %}
+                    </ul>
                 </div>
                 {% endif %}
-                
-                <div class="quiz-passing-score">
-                    <span class="meta-label">Passing Score:</span>
-                    <span class="meta-value">{{ quiz.passing_score }}%</span>
-                </div>
             </div>
             
             {% if quiz.description %}
-            <div class="quiz-description">
+            <div class="description-section">
+                <h3 class="section-subtitle">Description</h3>
                 <div class="description-content">{{ quiz.description|linebreaks }}</div>
             </div>
             {% endif %}
             
-            <div class="quiz-details">
-                <div class="detail-item">
-                    <span class="detail-label">Questions</span>
-                    <span class="detail-value">{{ questions|length }}</span>
-                </div>
-                
-                <div class="detail-item">
-                    <span class="detail-label">Time Limit</span>
-                    <span class="detail-value">
-                        {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}
-                    </span>
-                </div>
-                
-                <div class="detail-item">
-                    <span class="detail-label">Passing Score</span>
-                    <span class="detail-value">{{ quiz.passing_score }}%</span>
-                </div>
-                
-                {% if attempt %}
-                <div class="detail-item">
-                    <span class="detail-label">Your Score</span>
-                    <span class="detail-value {% if attempt.passed %}passed{% else %}failed{% endif %}">
-                        {% if attempt.score %}{{ attempt.score|floatformat:1 }}%{% else %}Not completed{% endif %}
-                    </span>
-                </div>
-                {% endif %}
-            </div>
-            
             {% if questions %}
-            <div class="quiz-preview">
+            <div class="quiz-overview">
                 <h3 class="section-subtitle">Quiz Overview</h3>
-                <div class="quiz-questions-preview">
+                <div class="questions-list">
                     {% for question in questions %}
-                    <div class="question-preview">
-                        <div class="question-number">Question {{ forloop.counter }}</div>
-                        <div class="question-preview-text">{{ question.text|truncatechars:100 }}</div>
+                    <div class="question-item">
+                        <div class="question-header">
+                            <h4 class="question-title">Question {{ forloop.counter }}</h4>
+                        </div>
+                        <div class="question-text">{{ question.text|truncatechars:100 }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -91,43 +82,16 @@
             </div>
             {% endif %}
             
-            {% if attempt and attempt.completed_at %}
-            <div class="attempt-summary">
-                <h3 class="section-subtitle">Your Previous Attempt</h3>
-                <div class="attempt-details">
-                    <div class="attempt-score">
-                        <span class="score-label">Score:</span>
-                        <span class="score-value {% if attempt.passed %}passed{% else %}failed{% endif %}">
-                            {{ attempt.score|floatformat:1 }}%
-                        </span>
-                        <span class="score-badge {% if attempt.passed %}passed{% else %}failed{% endif %}">
-                            {% if attempt.passed %}Passed{% else %}Failed{% endif %}
-                        </span>
-                    </div>
-                    
-                    <div class="attempt-date">
-                        Completed on {{ attempt.completed_at|date:"F j, Y, g:i a" }}
-                    </div>
-                    
-                    <div class="attempt-actions">
-                        <a href="{% url 'courses:quiz_results' course_slug=course.slug module_id=module.id attempt_id=attempt.id %}" class="btn btn-secondary btn-sm">
-                            View Results
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-            
-            <div class="quiz-actions">
+            <div class="form-actions">
                 {% if questions %}
-                    <a href="{% url 'courses:take_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-primary btn-large">
-                        {% if attempt and attempt.completed_at %}Retake Quiz{% else %}Start Quiz{% endif %}
+                    <a href="{% url 'courses:take_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-primary">
+                        Start Quiz
                     </a>
                 {% else %}
-                    <button disabled class="btn btn-primary btn-large disabled">
+                    <button disabled class="btn btn-primary disabled">
                         Quiz Not Available
                     </button>
-                    <p class="text-center mt-2 text-muted">This quiz doesn't have any questions yet.</p>
+                    <p class="text-muted">This quiz doesn't have any questions yet.</p>
                 {% endif %}
             </div>
         </div>

@@ -14,7 +14,7 @@ from .models import (
 )
 from .forms import (
     CourseForm, ModuleForm, LessonForm, InstructorProfileForm, 
-    ForumThreadForm, ForumReplyForm, QuizForm, QuestionForm, ChoiceFormSet, QuizResponseForm
+    ForumThreadForm, ForumReplyForm, QuizForm, QuestionForm, ChoiceFormSet, QuizResponseForm, NestedReplyForm
 )
 
 @login_required
@@ -49,7 +49,7 @@ def course_detail(request, course_slug):
     
     is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
     
-    is_instructor = course.instructor_user == request.user
+    is_this_course_instructor = course.instructor_user == request.user
     
     modules = Module.objects.filter(course=course).prefetch_related('lessons')
     
@@ -73,7 +73,7 @@ def course_detail(request, course_slug):
         'course': course,
         'modules': modules,
         'is_enrolled': is_enrolled,
-        'is_instructor': is_instructor,
+        'is_this_course_instructor': is_this_course_instructor,
         'progress_percentage': progress_percentage,
         'progress_width': progress_width,
     }
@@ -619,34 +619,59 @@ def forum_thread_detail(request, course_slug, thread_id):
     course = get_object_or_404(Course, slug=course_slug)
     thread = get_object_or_404(ForumThread, id=thread_id, course=course)
     
-    is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
-    is_instructor = course.instructor_user == request.user
+    # Check if the thread is locked
+    is_locked = thread.is_locked
     
-    if not (is_enrolled or is_instructor or request.user.is_staff):
-        messages.error(request, "You must be enrolled in this course to view forum threads.")
-        return redirect('courses:course_detail', course_slug=course_slug)
+    # Check if the user is staff or instructor (they can post even if thread is locked)
+    is_staff_or_instructor = request.user.is_staff or (
+        hasattr(request.user, 'instructor_profile') and 
+        course.instructor == request.user.instructor_profile.full_name
+    )
     
-    replies = thread.replies.all()
+    # Get all top-level replies (no parent)
+    replies = thread.replies.filter(parent=None).select_related('user').prefetch_related('child_replies__user')
     
-    if request.method == 'POST' and not thread.is_locked:
-        form = ForumReplyForm(request.POST)
-        if form.is_valid():
-            reply = form.save(commit=False)
-            reply.thread = thread
-            reply.user = request.user
-            reply.save()
-            
-            messages.success(request, "Reply posted successfully!")
-            return redirect('courses:forum_thread_detail', course_slug=course_slug, thread_id=thread.id)
+    if request.method == 'POST':
+        # Check if thread is locked and user is not staff/instructor
+        if is_locked and not is_staff_or_instructor:
+            messages.error(request, "This thread is locked. You cannot post replies.")
+            return redirect('courses:forum_thread_detail', course_slug=course_slug, thread_id=thread_id)
+        
+        # Check if this is a reply to a reply
+        parent_id = request.POST.get('parent_id')
+        if parent_id:
+            parent = get_object_or_404(ForumReply, id=parent_id)
+            form = NestedReplyForm(request.POST)
+            if form.is_valid():
+                reply = form.save(commit=False)
+                reply.thread = thread
+                reply.user = request.user
+                reply.parent = parent
+                reply.save()
+                messages.success(request, "Your reply has been posted.")
+                return redirect('courses:forum_thread_detail', course_slug=course_slug, thread_id=thread_id)
+        else:
+            # This is a reply to the thread
+            form = ForumReplyForm(request.POST)
+            if form.is_valid():
+                reply = form.save(commit=False)
+                reply.thread = thread
+                reply.user = request.user
+                reply.save()
+                messages.success(request, "Your reply has been posted.")
+                return redirect('courses:forum_thread_detail', course_slug=course_slug, thread_id=thread_id)
     else:
         form = ForumReplyForm()
+        nested_form = NestedReplyForm()
     
     context = {
         'course': course,
         'thread': thread,
         'replies': replies,
         'form': form,
-        'is_instructor': is_instructor,
+        'nested_form': nested_form,
+        'is_locked': is_locked,
+        'can_post': not is_locked or is_staff_or_instructor,
     }
     
     return render(request, 'courses/forum/thread_detail.html', context)

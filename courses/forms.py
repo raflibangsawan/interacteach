@@ -54,6 +54,17 @@ class ForumReplyForm(forms.ModelForm):
             'content': '',
         }
 
+class NestedReplyForm(forms.ModelForm):
+    class Meta:
+        model = ForumReply
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'form-input nested-reply-textarea', 'rows': 3, 'placeholder': 'Write your reply...'}),
+        }
+        labels = {
+            'content': '',
+        }
+
 # Quiz forms
 class QuizForm(forms.ModelForm):
     class Meta:

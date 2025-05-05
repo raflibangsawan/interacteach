@@ -137,7 +137,7 @@ class InstructorProfile(models.Model):
     def courses_count(self):
         return Course.objects.filter(instructor_user=self.user).count()
 
-# Forum models
+
 class ForumThread(models.Model):
     course = models.ForeignKey(Course, related_name='forum_threads', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='forum_threads', on_delete=models.CASCADE)
@@ -176,6 +176,7 @@ class ForumReply(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_solution = models.BooleanField(default=False)
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='child_replies', on_delete=models.CASCADE)
     
     class Meta:
         ordering = ['created_at']
@@ -183,6 +184,15 @@ class ForumReply(models.Model):
     
     def __str__(self):
         return f'Reply by {self.user.username} on {self.thread.title}'
+    
+    @property
+    def is_parent(self):
+        return self.parent is None
+    
+    @property
+    def has_children(self):
+        return self.child_replies.exists()
+
 
 # Quiz models
 class Quiz(models.Model):

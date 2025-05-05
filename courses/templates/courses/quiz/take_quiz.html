@@ -7,61 +7,8 @@
 <link rel="stylesheet" href="{% static 'courses/css/quiz.css' %}">
 {% endblock %}
 
-{% block extra_head %}
-<style>
-  .quiz-timer {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background-color: white;
-      border-radius: 0 0 10px 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-  }
-  
-  .timer-warning {
-      color: var(--danger-color);
-      font-weight: bold;
-  }
-  
-  .question-container {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border-color);
-  }
-  
-  .question-container:last-child {
-      border-bottom: none;
-  }
-  
-  .choice-label {
-      display: block;
-      padding: 15px;
-      margin-bottom: 10px;
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-  }
-  
-  .choice-label:hover {
-      background-color: var(--bg-light);
-      border-color: var(--primary-color-light);
-      transform: translateX(5px);
-  }
-  
-  input[type="radio"]:checked + .choice-label {
-      border-color: var(--primary-color);
-      background-color: var(--primary-color-light);
-  }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="content-wrapper">
+<div class="content-container">
     {% if quiz.time_limit > 0 %}
     <div class="quiz-timer" id="quiz-timer">
         <div class="timer-label">Time Remaining:</div>
@@ -71,9 +18,9 @@
     </div>
     {% endif %}
     
-    <div class="page-header">
+    <div class="content-header">
         <h1 class="page-title">{{ quiz.title }}</h1>
-        <div class="page-actions">
+        <div class="header-actions">
             <a href="{% url 'courses:quiz_detail_student' course_slug=course.slug module_id=module.id %}" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Exit Quiz
             </a>
@@ -82,43 +29,29 @@
     
     <div class="content-card">
         <div class="card-body">
-            <div class="quiz-meta">
-                <div class="quiz-module">
-                    <span class="meta-label">Module:</span>
-                    <span class="meta-value">{{ quiz.module.title }}</span>
-                </div>
-                
-                {% if quiz.time_limit > 0 %}
-                <div class="quiz-time-limit">
-                    <span class="meta-label">Time Limit:</span>
-                    <span class="meta-value">{{ quiz.time_limit }} minutes</span>
-                </div>
-                {% endif %}
-                
-                <div class="quiz-passing-score">
-                    <span class="meta-label">Passing Score:</span>
-                    <span class="meta-value">{{ quiz.passing_score }}%</span>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="info-card-title">Quiz Information</h3>
+                    <ul class="info-list">
+                        <li><span class="info-label">Module:</span> {{ quiz.module.title }}</li>
+                        <li><span class="info-label">Time Limit:</span> {% if quiz.time_limit %}{{ quiz.time_limit }} minutes{% else %}No time limit{% endif %}</li>
+                        <li><span class="info-label">Passing Score:</span> {{ quiz.passing_score }}%</li>
+                    </ul>
                 </div>
             </div>
-            
-            {% if quiz.description %}
-            <div class="quiz-description">
-                <div class="description-content">{{ quiz.description|linebreaks }}</div>
-            </div>
-            {% endif %}
             
             <form method="post" class="quiz-form" id="quiz-form">
                 {% csrf_token %}
                 
                 {% if form.non_field_errors %}
-                <div class="alert alert-danger">
+                <div class="form-error">
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
                 
                 <div class="question-navigation" id="question-navigation">
                     {% for question in quiz.questions.all %}
-                    <div class="question-nav-item" data-question="{{ forloop.counter }}" id="nav-{{ forloop.counter }}">
+                    <div class="nav-item" data-question="{{ forloop.counter }}" id="nav-{{ forloop.counter }}">
                         {{ forloop.counter }}
                     </div>
                     {% endfor %}
@@ -128,20 +61,17 @@
                     {% for question in quiz.questions.all %}
                     <div class="quiz-question" id="question-{{ forloop.counter }}" {% if forloop.counter > 1 %}style="display: none;"{% endif %}>
                         <div class="question-header">
-                            <div class="question-indicator">Question {{ forloop.counter }} of {{ quiz.questions.count }}</div>
+                            <div class="question-number">Question {{ forloop.counter }} of {{ quiz.questions.count }}</div>
                             <div class="question-points">{{ question.points }} points</div>
                         </div>
                         
                         <div class="question-text">{{ question.text }}</div>
                         
-                        <div class="question-choices">
+                        <div class="answer-choices">
                             {% for choice in question.choices.all %}
-                            <div class="choice-option" id="choice-{{ question.id }}-{{ choice.id }}">
-                                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" id="choice_{{ question.id }}_{{ choice.id }}" class="choice-input">
-                                <label for="choice_{{ question.id }}_{{ choice.id }}" class="choice-label">
-                                    <div class="choice-radio"></div>
-                                    <div class="choice-content">{{ choice.text }}</div>
-                                </label>
+                            <div class="answer-choice" id="choice-{{ question.id }}-{{ choice.id }}">
+                                <input type="radio" name="question_{{ question.id }}" value="{{ choice.id }}" id="choice_{{ question.id }}_{{ choice.id }}" class="answer-radio">
+                                <label for="choice_{{ question.id }}_{{ choice.id }}" class="answer-text">{{ choice.text }}</label>
                             </div>
                             {% endfor %}
                         </div>
@@ -168,7 +98,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Quiz navigation
         const questions = document.querySelectorAll('.quiz-question');
-        const navItems = document.querySelectorAll('.question-nav-item');
+        const navItems = document.querySelectorAll('.nav-item');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const submitBtn = document.getElementById('submit-btn');
@@ -189,7 +119,7 @@
         });
         
         // Add click event to choice options
-        const choiceOptions = document.querySelectorAll('.choice-option');
+        const choiceOptions = document.querySelectorAll('.answer-choice');
         choiceOptions.forEach(option => {
             option.addEventListener('click', function() {
                 const input = this.querySelector('input[type="radio"]');
@@ -199,6 +129,12 @@
                 const questionId = input.name.replace('question_', '');
                 const questionIndex = Array.from(questions).findIndex(q => q.id.includes(questionId));
                 navItems[questionIndex].classList.add('answered');
+                
+                // Add selected class to this choice
+                const choices = document.querySelectorAll(`[name="${input.name}"]`).forEach(radio => {
+                    radio.closest('.answer-choice').classList.remove('selected');
+                });
+                this.classList.add('selected');
                 
                 // Trigger change event
                 const event = new Event('change');
@@ -213,12 +149,6 @@
                 const questionName = this.name;
                 const questionNum = Array.from(questions).findIndex(q => q.innerHTML.includes(questionName)) + 1;
                 navItems[questionNum - 1].classList.add('answered');
-                
-                // Add selected class to parent
-                const parentOption = this.closest('.choice-option');
-                const siblings = parentOption.parentElement.querySelectorAll('.choice-option');
-                siblings.forEach(sib => sib.classList.remove('selected'));
-                parentOption.classList.add('selected');
             });
         });
         
@@ -293,11 +223,6 @@
             // Warning when less than 5 minutes remaining
             if (timer <= 300) {
                 timerDisplay.classList.add('timer-warning');
-            }
-            
-            // Warning flash when less than 1 minute
-            if (timer <= 60) {
-                timerDisplay.classList.add('timer-critical');
             }
             
             // Auto-submit when time is up
