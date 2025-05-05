@@ -536,6 +536,10 @@
   gap: 1.25rem;
 }
 
+.quiz-overview {
+  margin-top: 1.5rem;
+}
+
 .choice-form {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;

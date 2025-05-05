@@ -15,23 +15,10 @@
 {% if enrollments %}
     <section class="course-categories">
         <div class="category-tabs">
-            <div class="category-tab active">All Courses</div>
-            <div class="category-tab">In Progress</div>
-            <div class="category-tab">Completed</div>
+            <div class="category-tab active">All My Learnings</div>
         </div>
     </section>
     
-    <section class="course-sorting">
-        <div class="courses-count">{{ enrollments|length }} courses</div>
-        <div class="sort-options">
-            <span class="sort-label">Sort by:</span>
-            <select class="sort-select">
-                <option value="recent">Recently Accessed</option>
-                <option value="progress">Progress</option>
-                <option value="title">Title</option>
-            </select>
-        </div>
-    </section>
 
     <section class="my-courses-section">
         <div class="courses-grid">

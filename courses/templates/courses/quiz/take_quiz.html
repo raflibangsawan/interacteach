@@ -49,14 +49,6 @@
                 </div>
                 {% endif %}
                 
-                <div class="question-navigation" id="question-navigation">
-                    {% for question in quiz.questions.all %}
-                    <div class="nav-item" data-question="{{ forloop.counter }}" id="nav-{{ forloop.counter }}">
-                        {{ forloop.counter }}
-                    </div>
-                    {% endfor %}
-                </div>
-                
                 <div class="questions-container">
                     {% for question in quiz.questions.all %}
                     <div class="quiz-question" id="question-{{ forloop.counter }}" {% if forloop.counter > 1 %}style="display: none;"{% endif %}>
@@ -81,9 +73,6 @@
                 
                 <div class="quiz-navigation">
                     <button type="button" class="btn btn-secondary" id="prev-btn" disabled>Previous</button>
-                    <div class="quiz-progress">
-                        <span id="current-question">1</span> of {{ quiz.questions.count }}
-                    </div>
                     <button type="button" class="btn btn-primary" id="next-btn">Next</button>
                     <button type="submit" class="btn btn-success" id="submit-btn" style="display: none;">Submit Quiz</button>
                 </div>

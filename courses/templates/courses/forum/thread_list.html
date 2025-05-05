@@ -26,14 +26,6 @@
                 <button type="submit" class="search-button">Search</button>
             </form>
         </div>
-        <div class="forum-filters">
-            <label for="sort-select">Sort by:</label>
-            <select id="sort-select" class="sort-select" onchange="this.form.submit()">
-                <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
-                <option value="activity" {% if sort_by == 'activity' %}selected{% endif %}>Latest Activity</option>
-                <option value="replies" {% if sort_by == 'replies' %}selected{% endif %}>Most Replies</option>
-            </select>
-        </div>
         <a href="{% url 'courses:forum_thread_create' course_slug=course.slug %}" class="btn-submit">Create Thread</a>
     </div>
 
