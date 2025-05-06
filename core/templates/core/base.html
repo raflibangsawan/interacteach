@@ -17,9 +17,9 @@
                 </div>
                 <nav class="nav">
                     <ul class="nav-list">
-                        <li class="nav-item"><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
-                        <li class="nav-item"><a href="{% url 'courses:course_list' %}" class="nav-link">Courses</a></li>
                         {% if user.is_authenticated %}
+                            <li class="nav-item"><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
+                            <li class="nav-item"><a href="{% url 'courses:course_list' %}" class="nav-link">Courses</a></li>
                             <li class="nav-item"><a href="{% url 'courses:my_courses' %}" class="nav-link">My Learning</a></li>
                                                         
                             {% if is_instructor %}
