@@ -38,16 +38,28 @@
                 <div class="info-card">
                     <h3 class="info-card-title">Quiz Summary</h3>
                     <ul class="info-list">
-                        <li><span class="info-label">Correct Answers:</span> {{ attempt.correct_count }} / {{ questions_data|length }}</li>
-                        <li><span class="info-label">Time Taken:</span> 
-                            {% if attempt.started_at and attempt.completed_at %}
-                                {{ attempt.time_taken }}
-                            {% else %}
-                                N/A
-                            {% endif %}
+                        <li>
+                            <span class="info-label">Correct Answers:</span>
+                            <span class="info-value">{{ correct_count }} / {{ total_questions }}</span>
                         </li>
-                        <li><span class="info-label">Completed On:</span> {{ attempt.completed_at|date:"M d, Y, g:i a" }}</li>
-                        <li><span class="info-label">Passing Score:</span> {{ quiz.passing_score }}%</li>
+                        <li>
+                            <span class="info-label">Time Taken:</span>
+                            <span class="info-value">
+                                {% if attempt.started_at and attempt.completed_at %}
+                                    {{ attempt.time_taken }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </li>
+                        <li>
+                            <span class="info-label">Completed On:</span>
+                            <span class="info-value">{{ attempt.completed_at|date:"M d, Y, g:i a" }}</span>
+                        </li>
+                        <li>
+                            <span class="info-label">Passing Score:</span>
+                            <span class="info-value">{{ quiz.passing_score }}%</span>
+                        </li>
                     </ul>
                 </div>
             </div>

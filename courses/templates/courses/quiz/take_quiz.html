@@ -53,6 +53,14 @@
                     Please answer all questions before submitting the quiz.
                 </div>
                 
+                <div class="question-nav">
+                    {% for question in quiz.questions.all %}
+                    <button type="button" class="question-nav-btn" data-question="{{ forloop.counter }}">
+                        {{ forloop.counter }}
+                    </button>
+                    {% endfor %}
+                </div>
+                
                 <div class="questions-container">
                     {% for question in quiz.questions.all %}
                     <div class="quiz-question" id="question-{{ forloop.counter }}" {% if forloop.counter > 1 %}style="display: none;"{% endif %}>
@@ -96,11 +104,22 @@
         const submitBtn = document.getElementById('submit-btn');
         const quizForm = document.getElementById('quiz-form');
         const unansweredError = document.getElementById('unanswered-error');
+        const navButtons = document.querySelectorAll('.question-nav-btn');
         let currentQuestion = 1;
         const totalQuestions = {{ quiz.questions.count }};
         
         // Initialize navigation
         updateNavigation();
+        updateNavButtons();
+        
+        // Add click event to navigation buttons
+        navButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const questionNum = parseInt(this.getAttribute('data-question'));
+                showQuestion(questionNum);
+                unansweredError.style.display = 'none';
+            });
+        });
         
         // Add click event to choice options
         const choiceOptions = document.querySelectorAll('.answer-choice');
@@ -114,8 +133,27 @@
                     radio.closest('.answer-choice').classList.remove('selected');
                 });
                 this.classList.add('selected');
+                
+                // Update navigation button state
+                updateNavButtons();
             });
         });
+        
+        // Function to update navigation buttons state
+        function updateNavButtons() {
+            navButtons.forEach((button, index) => {
+                const questionId = questions[index].querySelector('input[type="radio"]').name;
+                const answered = document.querySelector(`input[name="${questionId}"]:checked`);
+                
+                button.classList.remove('active', 'answered');
+                if (index + 1 === currentQuestion) {
+                    button.classList.add('active');
+                }
+                if (answered) {
+                    button.classList.add('answered');
+                }
+            });
+        }
         
         // Form submission handling
         quizForm.addEventListener('submit', function(e) {
@@ -174,6 +212,7 @@
             
             // Update navigation state
             updateNavigation();
+            updateNavButtons();
         }
         
         // Function to update navigation buttons
@@ -234,3 +273,4 @@
     });
 </script>
 {% endblock %}
+

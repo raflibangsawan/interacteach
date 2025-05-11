@@ -90,9 +90,15 @@
                               <div class="module-quiz">
                                   <div class="quiz-link-container">
                                       <i class="fas fa-question-circle quiz-icon"></i>
-                                      <a href="{% url 'courses:quiz_detail_student' course_slug=course.slug module_id=module.id %}" class="quiz-link">
-                                          Module Quiz: {{ module.quiz.title }}
-                                      </a>
+                                      {% if is_this_course_instructor %}
+                                          <a href="{% url 'courses:quiz_detail_instructor' course_slug=course.slug module_id=module.id %}" class="quiz-link">
+                                              Module Quiz: {{ module.quiz.title }}
+                                          </a>
+                                      {% else %}
+                                          <a href="{% url 'courses:quiz_detail_student' course_slug=course.slug module_id=module.id %}" class="quiz-link">
+                                              Module Quiz: {{ module.quiz.title }}
+                                          </a>
+                                      {% endif %}
                                   </div>
                               </div>
                               {% endif %}

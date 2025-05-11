@@ -268,6 +268,18 @@ class QuizAttempt(models.Model):
     def __str__(self):
         return f"{self.enrollment.user.username}'s attempt at {self.quiz.title}"
     
+    @property
+    def time_taken(self):
+        if self.started_at and self.completed_at:
+            duration = self.completed_at - self.started_at
+            total_seconds = int(duration.total_seconds())
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            if minutes > 0:
+                return f"{minutes}m {seconds}s"
+            return f"{seconds}s"
+        return None
+    
     def calculate_score(self):
         if not self.completed_at:
             return 0

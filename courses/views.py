@@ -1213,6 +1213,9 @@ def take_quiz(request, course_slug, module_id):
                             defaults={'selected_choice': choice}
                         )
                 
+                # Calculate score and save attempt
+                attempt.score = attempt.calculate_score()
+                attempt.passed = attempt.is_passed()
                 attempt.save()
                 
                 messages.success(request, "Quiz completed successfully! Here are your results.")
@@ -1249,6 +1252,9 @@ def quiz_results(request, course_slug, module_id, attempt_id):
     
     responses = attempt.responses.all().select_related('question', 'selected_choice')
     
+    correct_count = sum(1 for response in responses if response.is_correct())
+    total_questions = quiz.questions.count()
+    
     questions_data = []
     for question in quiz.questions.all():
         response = next((r for r in responses if r.question_id == question.id), None)
@@ -1268,6 +1274,8 @@ def quiz_results(request, course_slug, module_id, attempt_id):
         'attempt': attempt,
         'questions_data': questions_data,
         'is_instructor': is_instructor,
+        'correct_count': correct_count,
+        'total_questions': total_questions,
     }
     
     return render(request, 'courses/quiz/quiz_results.html', context)

@@ -1041,6 +1041,131 @@ textarea.form-control {
   border: 1px solid var(--border-color);
 }
 
+/* Quiz Section Styles */
+.quiz-section {
+  background-color: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
+}
+
+.quiz-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.quiz-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px 0;
+}
+
+.quiz-description {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.quiz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.quiz-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.quiz-meta-item i {
+  color: #0071e3;
+  font-size: 1rem;
+}
+
+.quiz-status {
+  margin-bottom: 20px;
+}
+
+.quiz-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.quiz-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.quiz-actions .btn i {
+  font-size: 1rem;
+}
+
+.no-quiz {
+  text-align: center;
+  padding: 30px 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.no-quiz p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.no-quiz .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.no-quiz .btn i {
+  font-size: 1rem;
+}
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-badge i {
+  font-size: 0.875rem;
+}
+
+.status-published {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-draft {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .dashboard-stats {
@@ -1097,6 +1222,20 @@ textarea.form-control {
   }
 
   .instructor-course-actions {
+    justify-content: center;
+  }
+
+  .quiz-meta {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .quiz-actions {
+    flex-direction: column;
+  }
+  
+  .quiz-actions .btn {
+    width: 100%;
     justify-content: center;
   }
 }
