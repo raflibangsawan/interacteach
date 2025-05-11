@@ -49,6 +49,10 @@
                 </div>
                 {% endif %}
                 
+                <div id="unanswered-error" class="form-error" style="display: none;">
+                    Please answer all questions before submitting the quiz.
+                </div>
+                
                 <div class="questions-container">
                     {% for question in quiz.questions.all %}
                     <div class="quiz-question" id="question-{{ forloop.counter }}" {% if forloop.counter > 1 %}style="display: none;"{% endif %}>
@@ -87,25 +91,16 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Quiz navigation
         const questions = document.querySelectorAll('.quiz-question');
-        const navItems = document.querySelectorAll('.nav-item');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const submitBtn = document.getElementById('submit-btn');
-        const currentQuestionSpan = document.getElementById('current-question');
+        const quizForm = document.getElementById('quiz-form');
+        const unansweredError = document.getElementById('unanswered-error');
         let currentQuestion = 1;
         const totalQuestions = {{ quiz.questions.count }};
         
         // Initialize navigation
         updateNavigation();
-        navItems[0].classList.add('active');
-        
-        // Add click event to navigation items
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                const questionNum = parseInt(this.getAttribute('data-question'));
-                showQuestion(questionNum);
-            });
-        });
         
         // Add click event to choice options
         const choiceOptions = document.querySelectorAll('.answer-choice');
@@ -114,37 +109,47 @@
                 const input = this.querySelector('input[type="radio"]');
                 input.checked = true;
                 
-                // Mark question as answered in navigation
-                const questionId = input.name.replace('question_', '');
-                const questionIndex = Array.from(questions).findIndex(q => q.id.includes(questionId));
-                navItems[questionIndex].classList.add('answered');
-                
                 // Add selected class to this choice
                 const choices = document.querySelectorAll(`[name="${input.name}"]`).forEach(radio => {
                     radio.closest('.answer-choice').classList.remove('selected');
                 });
                 this.classList.add('selected');
-                
-                // Trigger change event
-                const event = new Event('change');
-                input.dispatchEvent(event);
             });
         });
         
-        // Add change event to radio inputs
-        const radioInputs = document.querySelectorAll('input[type="radio"]');
-        radioInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const questionName = this.name;
-                const questionNum = Array.from(questions).findIndex(q => q.innerHTML.includes(questionName)) + 1;
-                navItems[questionNum - 1].classList.add('answered');
+        // Form submission handling
+        quizForm.addEventListener('submit', function(e) {
+            const unansweredQuestions = [];
+            
+            // Check each question for an answer
+            questions.forEach((question, index) => {
+                const questionId = question.querySelector('input[type="radio"]').name;
+                const answered = document.querySelector(`input[name="${questionId}"]:checked`);
+                
+                if (!answered) {
+                    unansweredQuestions.push(index + 1);
+                }
             });
+            
+            if (unansweredQuestions.length > 0) {
+                e.preventDefault();
+                unansweredError.style.display = 'block';
+                
+                // Show the first unanswered question
+                showQuestion(unansweredQuestions[0]);
+                
+                // Scroll to the error message
+                unansweredError.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                unansweredError.style.display = 'none';
+            }
         });
         
         // Previous button click
         prevBtn.addEventListener('click', function() {
             if (currentQuestion > 1) {
                 showQuestion(currentQuestion - 1);
+                unansweredError.style.display = 'none';
             }
         });
         
@@ -152,6 +157,7 @@
         nextBtn.addEventListener('click', function() {
             if (currentQuestion < totalQuestions) {
                 showQuestion(currentQuestion + 1);
+                unansweredError.style.display = 'none';
             }
         });
         
@@ -165,14 +171,9 @@
             
             // Update current question
             currentQuestion = questionNum;
-            currentQuestionSpan.textContent = currentQuestion;
             
             // Update navigation state
             updateNavigation();
-            
-            // Update active nav item
-            navItems.forEach(item => item.classList.remove('active'));
-            navItems[currentQuestion - 1].classList.add('active');
         }
         
         // Function to update navigation buttons

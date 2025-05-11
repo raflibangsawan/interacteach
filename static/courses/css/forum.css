@@ -40,11 +40,10 @@
 /* Forum Actions */
 .forum-actions {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
 }
 
 .forum-search {
@@ -279,7 +278,9 @@
 .nested-reply-form {
   margin-top: 15px;
   padding: 15px;
-  background-color: #f0f7ff;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
 }
 
 textarea {
@@ -311,14 +312,18 @@ textarea {
 .btn-unlock,
 .btn-mark-solution,
 .btn-unmark-solution {
-  padding: 8px 15px;
+  padding: 8px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  height: 36px;
   transition: all 0.2s ease;
 }
 
@@ -460,25 +465,47 @@ textarea {
 }
 
 .nested-reply {
-  background-color: #f0f7ff;
+  background-color: #f8f9fa;
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 10px;
+  border: 1px solid #e9ecef;
 }
 
 .nested-reply-author-info {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
 .nested-reply-author-info .author-name {
-  margin-bottom: 0;
-  margin-right: 10px;
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.nested-reply-author-info .instructor-badge.small {
+  margin: 0;
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.nested-reply-author-info .reply-date {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
 }
 
 .nested-reply-content {
-  margin-top: 5px;
+  margin-top: 10px;
+}
+
+.nested-reply .reply-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 
 /* Thread actions */
@@ -615,4 +642,13 @@ textarea.form-control {
   background-color: #e9ecef;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.forum-actions .btn-back,
+.forum-actions .btn-delete,
+.forum-actions .btn-pin,
+.forum-actions .btn-unpin,
+.forum-actions .btn-lock,
+.forum-actions .btn-unlock {
+  min-width: 120px;
 }
