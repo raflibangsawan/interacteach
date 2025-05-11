@@ -138,6 +138,7 @@
   </div>
   
   <div class="course-sidebar">
+      {% if not is_this_course_instructor %}
       <div class="enrollment-card">
           {% if is_enrolled %}
               <div class="enrolled-status">
@@ -150,17 +151,18 @@
                       {% if progress_percentage > 0 %}Continue Course{% else %}Start Course{% endif %}
                   </a>
               {% endif %}
-          {% elif not is_this_course_instructor and course.is_published %}
+          {% elif course.is_published %}
               <form method="post" action="{% url 'courses:enroll_course' course_slug=course.slug %}">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-success enroll-button">Enroll Now</button>
               </form>
-          {% elif not course.is_published %}
+          {% else %}
               <div class="course-status-message">
                   <p>This course is not yet published.</p>
               </div>
           {% endif %}
       </div>
+      {% endif %}
       
       <div class="course-info-card">
           <h3 class="card-title">Course Information</h3>
