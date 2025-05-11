@@ -1,0 +1,89 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        max-width: 600px;
+        margin: 100px auto;
+        text-align: center;
+        padding: 40px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .error-code {
+        font-size: 120px;
+        font-weight: 700;
+        color: #ef4444;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .error-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 20px 0;
+    }
+
+    .error-message {
+        color: #6b7280;
+        font-size: 18px;
+        margin-bottom: 30px;
+        line-height: 1.5;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #0071e3;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0051a2;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #1f2937;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <h1 class="error-code">403</h1>
+    <h2 class="error-title">Access Denied</h2>
+    <p class="error-message">
+        Sorry, you don't have permission to access this page.
+        Please make sure you're logged in with the correct account.
+    </p>
+    <div class="error-actions">
+        <a href="{% url 'core:home' %}" class="btn btn-primary">Go to Homepage</a>
+        <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+    </div>
+</div>
+{% endblock %} 
