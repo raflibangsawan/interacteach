@@ -141,10 +141,11 @@
 </div>
 
 <div class="danger-zone">
-  <h2 class="section-title">Danger Zone</h2>
-  <div class="danger-actions">
-      <a href="{% url 'courses:delete_course' course_slug=course.slug %}" class="btn btn-danger">Delete Course</a>
-  </div>
+    <h2 class="danger-title">Danger Zone</h2>
+    <p class="danger-description">Be careful, these actions cannot be undone.</p>
+    <div class="danger-actions">
+        <a href="{% url 'courses:delete_course' course_slug=course.slug %}" class="btn btn-danger">Delete Course</a>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

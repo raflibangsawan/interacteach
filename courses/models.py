@@ -124,7 +124,7 @@ class InstructorProfile(models.Model):
     bio = models.TextField(blank=True)
     expertise = models.CharField(max_length=200, blank=True)
     website = models.URLField(blank=True)
-    profile_image = models.CharField(max_length=200, default='/static/courses/images/instructor-placeholder.jpg')
+    profile_image = models.CharField(max_length=200, default='https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1746949129~exp=1746952729~hmac=2e139c08af0e5fb473952938f8e689336a8a643d2df0fd1310d8d571ba8872ee&w=740')
     
     def __str__(self):
         return f"Instructor: {self.user.get_full_name() or self.user.username}"

@@ -71,10 +71,11 @@
 </div>
 
 <div class="danger-zone">
-  <h2 class="section-title">Danger Zone</h2>
-  <div class="danger-actions">
-      <a href="{% url 'courses:delete_lesson' course_slug=course.slug module_id=module.id lesson_id=lesson.id %}" class="btn btn-danger">Delete Lesson</a>
-  </div>
+    <h2 class="danger-title">Danger Zone</h2>
+    <p class="danger-description">Be careful, these actions cannot be undone.</p>
+    <div class="danger-actions">
+        <a href="{% url 'courses:delete_lesson' course_slug=course.slug module_id=module.id lesson_id=lesson.id %}" class="btn btn-danger">Delete Lesson</a>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

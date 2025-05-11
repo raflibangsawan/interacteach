@@ -109,10 +109,10 @@
                             <h3 class="question-title">{{ question.text }}</h3>
                             <div class="question-actions">
                                 <a href="{% url 'courses:edit_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline">
-                                    <i class="fas fa-edit"></i> Edit
+                                    Edit
                                 </a>
                                 <a href="{% url 'courses:delete_question' course_slug=course.slug module_id=module.id question_id=question.id %}" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i> Delete
+                                    Delete
                                 </a>
                             </div>
                         </div>
@@ -148,7 +148,7 @@
         
         <div class="danger-actions">
             <a href="{% url 'courses:delete_quiz' course_slug=course.slug module_id=module.id %}" class="btn btn-danger">
-                <i class="fas fa-trash"></i> Delete Quiz
+                Delete Quiz
             </a>
         </div>
     </div>

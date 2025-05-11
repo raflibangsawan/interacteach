@@ -67,9 +67,13 @@ WSGI_APPLICATION = 'interacteach.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'data', 'db.sqlite3'),
     }
 }
+
+# Create data directory if it doesn't exist
+if not os.path.exists(os.path.join(BASE_DIR, 'data')):
+    os.makedirs(os.path.join(BASE_DIR, 'data'))
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

@@ -112,6 +112,8 @@ def lesson_detail(request, course_slug, lesson_id):
     
     is_instructor = course.instructor_user == request.user
     
+    progress_percentage = 0
+    
     if not is_instructor:
         try:
             enrollment = Enrollment.objects.get(user=request.user, course=course)
@@ -141,6 +143,16 @@ def lesson_detail(request, course_slug, lesson_id):
                 messages.success(request, f"Congratulations! You've completed the course '{course.title}'")
         
         is_completed = lesson_progress.completed
+        
+        # Calculate progress percentage
+        total_lessons = Lesson.objects.filter(module__course=course).count()
+        completed_lessons = LessonProgress.objects.filter(
+            enrollment=enrollment, 
+            completed=True
+        ).count()
+        
+        if total_lessons > 0:
+            progress_percentage = (completed_lessons / total_lessons) * 100
     else:
         is_completed = False
     
@@ -169,6 +181,7 @@ def lesson_detail(request, course_slug, lesson_id):
         'next_lesson': next_lesson,
         'module': module,
         'is_instructor': is_instructor,
+        'progress_percentage': progress_percentage,
     }
     
     return render(request, 'courses/lesson_detail.html', context)
