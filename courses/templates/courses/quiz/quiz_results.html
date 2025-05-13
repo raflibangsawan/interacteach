@@ -43,16 +43,6 @@
                             <span class="info-value">{{ correct_count }} / {{ total_questions }}</span>
                         </li>
                         <li>
-                            <span class="info-label">Time Taken:</span>
-                            <span class="info-value">
-                                {% if attempt.started_at and attempt.completed_at %}
-                                    {{ attempt.time_taken }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </span>
-                        </li>
-                        <li>
                             <span class="info-label">Completed On:</span>
                             <span class="info-value">{{ attempt.completed_at|date:"M d, Y, g:i a" }}</span>
                         </li>

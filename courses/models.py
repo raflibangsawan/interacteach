@@ -257,7 +257,7 @@ class Choice(models.Model):
 class QuizAttempt(models.Model):
     enrollment = models.ForeignKey(Enrollment, related_name='quiz_attempts', on_delete=models.CASCADE)
     quiz = models.ForeignKey(Quiz, related_name='attempts', on_delete=models.CASCADE)
-    started_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(null=True, blank=True)
     passed = models.BooleanField(default=False)
@@ -272,12 +272,17 @@ class QuizAttempt(models.Model):
     def time_taken(self):
         if self.started_at and self.completed_at:
             duration = self.completed_at - self.started_at
-            total_seconds = int(duration.total_seconds())
-            minutes = total_seconds // 60
-            seconds = total_seconds % 60
-            if minutes > 0:
+            print(self.started_at, self.completed_at)
+            print(duration)
+            total_seconds = duration.total_seconds()
+            if total_seconds < 60:
+                # For durations under 1 minute, show seconds with one decimal place
+                return f"{total_seconds:.1f}s"
+            else:
+                # For durations over 1 minute, show minutes and seconds
+                minutes = int(total_seconds // 60)
+                seconds = int(total_seconds % 60)
                 return f"{minutes}m {seconds}s"
-            return f"{seconds}s"
         return None
     
     def calculate_score(self):

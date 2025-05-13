@@ -1185,12 +1185,14 @@ def take_quiz(request, course_slug, module_id):
         messages.info(request, "You have already completed this quiz. You can view your results.")
         return redirect('courses:quiz_results', course_slug=course_slug, module_id=module_id, attempt_id=existing_attempt.id)
     
+    # Get or create attempt, setting started_at when first accessed
     attempt, created = QuizAttempt.objects.get_or_create(
         enrollment=enrollment,
         quiz=quiz,
         defaults={'started_at': timezone.now()}
     )
     
+    # If attempt exists but not completed, update started_at
     if not created and not attempt.completed_at:
         attempt.started_at = timezone.now()
         attempt.save()

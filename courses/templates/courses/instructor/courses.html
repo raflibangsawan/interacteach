@@ -44,12 +44,6 @@
                     <div class="instructor-course-actions">
                         <a href="{% url 'courses:edit_course' course_slug=course.slug %}" class="btn btn-primary">Edit Course</a>
                         <a href="{% url 'courses:course_detail' course_slug=course.slug %}" class="btn btn-secondary">View Course</a>
-                        {% if course.is_published %}
-                            <a href="{% url 'courses:unpublish_course' course_slug=course.slug %}" class="btn btn-warning">Unpublish</a>
-                        {% else %}
-                            <a href="{% url 'courses:publish_course' course_slug=course.slug %}" class="btn btn-success">Publish</a>
-                        {% endif %}
-                        <a href="{% url 'courses:delete_course' course_slug=course.slug %}" class="btn btn-danger">Delete</a>
                     </div>
                 </div>
             </div>
