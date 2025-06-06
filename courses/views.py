@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.forms import inlineformset_factory
 from django.db import transaction
 from django.urls import reverse
+from django import forms
 
 from .models import (
     Course, Module, Lesson, Enrollment, LessonProgress, InstructorProfile, 
@@ -1029,6 +1030,9 @@ def create_question(request, course_slug, module_id):
     else:
         form = QuestionForm()
         formset = ChoiceFormSet()
+        # Set the first choice as correct by default
+        if formset.forms:
+            formset.forms[0].initial['is_correct'] = True
     
     context = {
         'course': course,

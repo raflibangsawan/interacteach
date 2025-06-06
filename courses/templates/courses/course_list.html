@@ -57,26 +57,17 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Category tabs functionality
         const tabs = document.querySelectorAll('.category-tab');
         tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
+            tab.addEventListener('click', function() {]
                 tabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
                 this.classList.add('active');
-                
-                // Here you would typically filter the courses based on the selected category
-                // For now, this is just a UI demonstration
             });
         });
         
-        // Sort select functionality
         const sortSelect = document.querySelector('.sort-select');
         if (sortSelect) {
             sortSelect.addEventListener('change', function() {
-                // Here you would typically sort the courses based on the selected option
-                // For now, this is just a UI demonstration
             });
         }
     });
