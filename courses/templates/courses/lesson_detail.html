@@ -48,6 +48,15 @@
           </div>
       {% endif %}
       
+      {% if lesson.meeting_link %}
+          <div class="lesson-meeting">
+              <a href="{{ lesson.meeting_link }}" target="_blank" class="meeting-link">
+                  <span class="meeting-icon">📹</span>
+                  Join Meeting
+              </a>
+          </div>
+      {% endif %}
+      
       <div class="lesson-content">
           {{ lesson.content|linebreaks }}
       </div>

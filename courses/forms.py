@@ -20,9 +20,10 @@ class ModuleForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['title', 'content', 'video_url', 'order']
+        fields = ['title', 'content', 'video_url', 'meeting_link', 'order']
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),
+            'meeting_link': forms.URLInput(attrs={'placeholder': 'https://meet.google.com/... or https://zoom.us/...'}),
         }
 
 class InstructorProfileForm(forms.ModelForm):

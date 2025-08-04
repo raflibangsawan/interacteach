@@ -34,6 +34,15 @@
       </div>
       
       <div class="form-group">
+          <label for="{{ form.meeting_link.id_for_label }}" class="form-label">Meeting Link (Optional)</label>
+          {{ form.meeting_link }}
+          {% if form.meeting_link.errors %}
+          <div class="form-error">{{ form.meeting_link.errors }}</div>
+          {% endif %}
+          <div class="form-help">Enter a meeting link for live sessions (e.g., Google Meet, Zoom, Teams)</div>
+      </div>
+      
+      <div class="form-group">
           <label for="{{ form.content.id_for_label }}" class="form-label">Lesson Content</label>
           {{ form.content }}
           {% if form.content.errors %}

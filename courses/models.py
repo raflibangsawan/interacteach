@@ -69,6 +69,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     video_url = models.URLField(blank=True, null=True)
+    meeting_link = models.URLField(blank=True, null=True, help_text="Link for live meeting/video conference")
     order = models.PositiveIntegerField(default=0)
     
     class Meta:
